@@ -68,9 +68,9 @@ The intended backend is a NestJS modular monolith with tenant-aware identity and
 
 ## Deployment
 
-The current Vercel-ready surface is the Next.js website (`apps/web`). Connect the GitHub monorepo to Vercel and set the project Root Directory to `apps/web`. The school-admin, student and family routes are product previews, not live portals.
+The Next.js website (`apps/web`) is deployed at [smartschool-os-chi.vercel.app](https://smartschool-os-chi.vercel.app). Its Vercel project uses `apps/web` as the Root Directory. The school-admin, student and family routes are product previews, not live portals.
 
-The NestJS API (`apps/api`) currently provides a health endpoint only; it has no database, identity or school workflows yet. Vercel supports NestJS as a separate project rooted at `apps/api`, but it should be deployed as a real backend only after managed data services and production environment variables are configured. Do not use the development credentials in `.env.example` in production.
+The NestJS API (`apps/api`) is deployed separately at [smartschools-api.vercel.app](https://smartschools-api.vercel.app), with `apps/api` as its Root Directory and GitHub deployments enabled from `main`. Its production `WEB_ORIGIN` is set to the website origin for CORS. The API currently provides only `/api/health`; it has no database, identity or school workflows yet. Managed data services and production environment variables are required before implementing those workflows. Do not use the development credentials in `.env.example` in production.
 
 ## Suggested delivery order
 
