@@ -71,21 +71,28 @@ const portals = [
   {
     title: "School admin",
     description: "Set up your school and bring academics, teaching and operations together.",
-    href: "/portals/school-admin",
+    href: "/schools",
     icon: "school",
     tone: "mint",
   },
   {
+    title: "Teacher",
+    description: "Prepare lessons, guide classroom learning and support student progress.",
+    href: "/schools",
+    icon: "teacher",
+    tone: "blue",
+  },
+  {
     title: "Student",
     description: "See a learning space built around progress, practice and curiosity.",
-    href: "/portals/student",
+    href: "/schools",
     icon: "student",
     tone: "lavender",
   },
   {
-    title: "Family",
+    title: "Parent or guardian",
     description: "Stay connected to each child’s learning, attendance and school updates.",
-    href: "/portals/family",
+    href: "/schools",
     icon: "family",
     tone: "peach",
   },
@@ -148,9 +155,10 @@ export default function Home() {
             <a href="#platform">Platform</a>
             <a href="#how-it-works">How it works</a>
             <a href="#for-schools">For schools</a>
+            <Link href="/schools">Find your school</Link>
           </nav>
-          <Link className="button button-dark header-cta" href="/portals">
-            Explore workspaces <ArrowIcon diagonal />
+          <Link className="button button-dark header-cta" href="/schools">
+            Find your school <ArrowIcon diagonal />
           </Link>
         </div>
       </header>
@@ -170,8 +178,8 @@ export default function Home() {
               <a className="button button-lime" href="#platform">
                 Discover the platform <ArrowIcon />
               </a>
-              <Link className="text-link text-link-light" href="/portals">
-                Explore workspaces <ArrowIcon diagonal />
+              <Link className="text-link text-link-light" href="/schools">
+                Find your school <ArrowIcon diagonal />
               </Link>
             </div>
             <div className="hero-note">
@@ -253,7 +261,7 @@ export default function Home() {
               Learning should respond to what a student understands today—not just where a class is on the timetable.
               SmartSchools connects assessment evidence to practical, teacher-supported action.
             </p>
-            <Link className="text-link text-link-light" href="/portals/student">Explore the student experience <ArrowIcon /></Link>
+            <Link className="text-link text-link-light" href="/schools">Explore the student experience <ArrowIcon /></Link>
           </div>
           <div className="learning-cycle" aria-label="Learning cycle: assess, diagnose, personalise, teach, practise, adapt">
             {["Assess", "Diagnose", "Personalise", "Teach", "Practise", "Adapt"].map((item, index) => (
@@ -284,7 +292,7 @@ export default function Home() {
             <li><span>✓</span> Grades, class arms and enrolments</li>
             <li><span>✓</span> Subjects, teachers and learning sessions</li>
           </ul>
-          <Link className="button button-dark" href="/portals/school-admin">Explore school admin <ArrowIcon /></Link>
+          <Link className="button button-dark" href="/schools/new">Set up your school <ArrowIcon /></Link>
         </div>
         <div className="school-map" aria-label="School hierarchy illustration">
           <div className="map-line map-line-one" />
@@ -322,11 +330,11 @@ export default function Home() {
               </div>
               <h3>{portal.title}</h3>
               <p>{portal.description}</p>
-              <span className="portal-open">Explore workspace <ArrowIcon /></span>
+              <span className="portal-open">Find your school <ArrowIcon /></span>
             </Link>
           ))}
         </div>
-        <p className="preview-disclaimer">Workspace previews are a starting point. Secure sign-in and live school data are part of the next build stages.</p>
+        <p className="preview-disclaimer">Choose your school before entering a workspace. Directory records are sample data; secure sign-in and live school records are the next build stages.</p>
       </section>
 
       <section className="principles-section">
@@ -361,7 +369,7 @@ export default function Home() {
           <span className="eyebrow"><span className="eyebrow-dot" /> The future of school, built together</span>
           <h2>Let’s make room<br />for <span>what’s possible.</span></h2>
           <p>A connected school experience begins with a stronger foundation.</p>
-          <Link className="button button-dark" href="/portals">Explore SmartSchools <ArrowIcon /></Link>
+          <Link className="button button-dark" href="/schools">Find your school <ArrowIcon /></Link>
         </div>
         <div className="closing-mark" aria-hidden="true">S</div>
       </section>
@@ -380,9 +388,8 @@ export default function Home() {
           </div>
           <div className="footer-links">
             <span>Workspaces</span>
-            <Link href="/portals/school-admin">School admin</Link>
-            <Link href="/portals/student">Student</Link>
-            <Link href="/portals/family">Family</Link>
+            <Link href="/schools">School workspaces</Link>
+            <Link href="/schools/new">Set up a school</Link>
           </div>
         </div>
         <div className="footer-bottom section-wrap">

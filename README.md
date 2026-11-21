@@ -4,12 +4,13 @@ SmartSchools is a connected school platform for academics, AI-supported learning
 
 ## Monorepo
 
-- `apps/web` — Next.js public website and role-based workspace entry points.
-- `apps/api` — NestJS modular API foundation.
+- `apps/web` — Next.js public website, school discovery, onboarding preview and tenant-branded role entry.
+- `apps/platform-console` — Internal SmartSchools operations dashboard prototype (not connected to live data).
+- `apps/api` — NestJS modular backend foundation.
 - `packages/*` — Shared contracts and UI can be added here as product surfaces grow.
 - `infra` — Local development services and deployment infrastructure.
 
-The public site and the school-admin, student, and family workspaces currently live in one Next.js app. They are previews, not authenticated production portals. This keeps the first release focused while leaving room to split deployments later.
+School-facing roles share one Next.js app and school portal entry, while the platform operator console is a separate app. This keeps school identity, navigation and access flows together while isolating the higher-privilege platform surface.
 
 ## Get started
 
@@ -21,7 +22,7 @@ cp .env.example .env
 npm run dev
 ```
 
-The website runs at `http://localhost:3000`; the API health endpoint is `http://localhost:4000/api/health`.
+The website and school entry run at `http://localhost:3000`; the platform console prototype runs at `http://localhost:3002`; the API health endpoint is `http://localhost:4000/api/health`.
 
 Start local Postgres (with pgvector) and Redis when needed:
 
@@ -31,9 +32,20 @@ npm run infra:up
 
 ## Product direction
 
-Build in stages: school structure and access; curriculum intelligence; assessment and mastery; personalized learning and teacher tools; student and family experiences; then operations, finance, and physical innovation infrastructure. Curriculum extraction, official assessment outcomes, and AI-generated teaching resources require human review and approval.
+Build in stages: tenant provisioning and secure school membership; school structure; curriculum intelligence; assessment and mastery; personalized learning and teacher tools; student and family experiences; then operations, finance, and physical innovation infrastructure. Curriculum extraction, official assessment outcomes, and AI-generated teaching resources require human review and approval.
 
 ## What the school infrastructure looks like
+
+### School discovery and workspace access
+
+- `/schools` is the school finder; `/s/[schoolSlug]` is the school-branded workspace chooser. The current directory contains sample schools only.
+- `/schools/new` previews school onboarding. It does not create a tenant or save or send submitted details.
+- A production directory should list only schools that opt in to discovery; private schools should be reachable by their school-provided code or link.
+- A school UUID is an internal identifier. A public slug or school code helps find the school but is never a password. Authentication must verify the user's active school membership and role after school selection.
+- Workspace choices include school administrator, teacher, student and parent/guardian. Transport access is enabled per school rather than shown as a universal role.
+- `apps/platform-console` shows illustrative metrics and records only. It must not be exposed as an operational console until platform authentication, authorization, tenant provisioning and audit logging are implemented.
+
+The sign-in screen is intentionally non-functional until identity and membership checks are connected. Do not enter real credentials in the preview.
 
 The school is the shared source of truth behind each role-based workspace. The core hierarchy is:
 
@@ -68,7 +80,9 @@ The intended backend is a NestJS modular monolith with tenant-aware identity and
 
 ## Deployment
 
-The Next.js website (`apps/web`) is deployed at [smartschool-os-chi.vercel.app](https://smartschool-os-chi.vercel.app). Its Vercel project uses `apps/web` as the Root Directory. The school-admin, student and family routes are product previews, not live portals.
+The Next.js website and school entry (`apps/web`) are deployed at [smartschool-os-chi.vercel.app](https://smartschool-os-chi.vercel.app). Its Vercel project uses `apps/web` as the Root Directory. The school directory currently contains sample records, and the school sign-in is a non-functional preview.
+
+The Platform Console (`apps/platform-console`) runs locally at `http://localhost:3002` and is not deployed. It contains illustrative data only and must not be exposed as an operational console until platform authentication, authorization, provisioning and auditing are implemented.
 
 The NestJS API (`apps/api`) is deployed separately at [smartschools-api.vercel.app](https://smartschools-api.vercel.app), with `apps/api` as its Root Directory and GitHub deployments enabled from `main`. Its production `WEB_ORIGIN` is set to the website origin for CORS. The API currently provides only `/api/health`; it has no database, identity or school workflows yet. Managed data services and production environment variables are required before implementing those workflows. Do not use the development credentials in `.env.example` in production.
 
