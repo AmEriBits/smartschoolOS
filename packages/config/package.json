@@ -1,0 +1,11 @@
+{
+  "name": "@smartschools/config",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./eslint/next": "./eslint/next.mjs",
+    "./typescript/next.json": "./typescript/next.json",
+    "./typescript/node.json": "./typescript/node.json"
+  }
+}

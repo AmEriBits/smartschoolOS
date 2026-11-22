@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getSchoolBySlug, schools } from "@/lib/schools";
+import { getSchoolBySlug, getSchoolInitials } from "@/lib/schools";
 import { workspaces } from "@/lib/workspaces";
 
 type Props = {
@@ -9,13 +9,9 @@ type Props = {
 
 export const instant = false;
 
-export function generateStaticParams() {
-  return schools.map((school) => ({ schoolSlug: school.slug }));
-}
-
 export async function generateMetadata({ params }: Props) {
   const { schoolSlug } = await params;
-  const school = getSchoolBySlug(schoolSlug);
+  const school = await getSchoolBySlug(schoolSlug);
   return {
     title: school ? `${school.name} | SmartSchools` : "School workspace | SmartSchools",
   };
@@ -23,8 +19,10 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function SchoolWorkspacePage({ params }: Props) {
   const { schoolSlug } = await params;
-  const school = getSchoolBySlug(schoolSlug);
+  const school = await getSchoolBySlug(schoolSlug);
   if (!school) notFound();
+  const initials = getSchoolInitials(school.name);
+  const accent = school.slug.charCodeAt(0) % 2 ? "blue" : "green";
 
   return (
     <main className="tenant-page">
@@ -44,7 +42,7 @@ export default async function SchoolWorkspacePage({ params }: Props) {
           <span aria-hidden="true">←</span> All schools
         </Link>
         <div className="tenant-identity">
-          <div className={`tenant-logo tenant-logo-${school.accent}`}>{school.initials}</div>
+          <div className={`tenant-logo tenant-logo-${accent}`}>{initials}</div>
           <div>
             <span className="eyebrow">Welcome to your school</span>
             <h1>{school.name}</h1>
@@ -82,7 +80,7 @@ export default async function SchoolWorkspacePage({ params }: Props) {
           </p>
         </div>
         <p className="tenant-preview-note">
-          Preview school directory · Sign-in and live school records are not connected yet.
+          School membership is checked before access. School records and operational workspaces will be introduced in later phases.
         </p>
       </section>
     </main>

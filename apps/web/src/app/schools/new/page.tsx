@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { OnboardingPreview } from "@/features/schools/onboarding-preview";
+import { SchoolApplicationForm } from "@/features/schools/school-application-form";
 
 export const metadata = {
   title: "Set up your school | SmartSchools",
-  description: "Preview the guided school setup and onboarding process.",
+  description: "Apply to onboard your school to SmartSchools.",
 };
 
 export default function NewSchoolPage() {
@@ -23,7 +23,7 @@ export default function NewSchoolPage() {
           <span className="eyebrow"><span className="eyebrow-dot" /> School onboarding</span>
           <h1>Give your school<br /><span>a connected start.</span></h1>
         </div>
-        <OnboardingPreview />
+        <SchoolApplicationForm />
       </section>
     </main>
   );

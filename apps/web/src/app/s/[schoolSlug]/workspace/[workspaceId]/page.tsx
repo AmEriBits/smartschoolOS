@@ -1,7 +1,9 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getSchoolBySlug, schools } from "@/lib/schools";
-import { getWorkspace, workspaces } from "@/lib/workspaces";
+import { WorkspaceSignIn } from "@/features/schools/workspace-sign-in";
+import { getSchoolBySlug, getSchoolInitials } from "@/lib/schools";
+import { getWorkspace } from "@/lib/workspaces";
 
 type Props = {
   params: Promise<{ schoolSlug: string; workspaceId: string }>;
@@ -9,20 +11,21 @@ type Props = {
 
 export const instant = false;
 
-export function generateStaticParams() {
-  return schools.flatMap((school) =>
-    workspaces.map((workspace) => ({
-      schoolSlug: school.slug,
-      workspaceId: workspace.id,
-    })),
-  );
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { workspaceId } = await params;
+  const workspace = getWorkspace(workspaceId);
+  return {
+    title: workspace ? `${workspace.label} sign in | SmartSchools` : "School sign in | SmartSchools",
+  };
 }
 
 export default async function WorkspaceSignInPage({ params }: Props) {
   const { schoolSlug, workspaceId } = await params;
-  const school = getSchoolBySlug(schoolSlug);
+  const school = await getSchoolBySlug(schoolSlug);
   const workspace = getWorkspace(workspaceId);
-  if (!school || !workspace) notFound();
+  if (!workspace) notFound();
+  const initials = school ? getSchoolInitials(school.name) : "SS";
+  const accent = school && school.slug.charCodeAt(0) % 2 ? "blue" : "green";
 
   return (
     <main className="school-sign-in">
@@ -32,9 +35,9 @@ export default async function WorkspaceSignInPage({ params }: Props) {
           <span>smart<span className="wordmark-strong">schools</span></span>
         </Link>
         <div className="sign-in-brand-copy">
-          <span className="eyebrow eyebrow-light"><span className="eyebrow-dot" /> {school.location}</span>
-          <div className={`tenant-logo tenant-logo-${school.accent}`}>{school.initials}</div>
-          <h1>{school.name}</h1>
+          <span className="eyebrow eyebrow-light"><span className="eyebrow-dot" /> {school?.location ?? "Secure school access"}</span>
+          <div className={`tenant-logo tenant-logo-${accent}`}>{initials}</div>
+          <h1>{school?.name ?? "Your school"}</h1>
           <p>A school community, connected.</p>
           <div className="sign-in-orbit" aria-hidden="true"><span /><span /><span /></div>
         </div>
@@ -42,29 +45,25 @@ export default async function WorkspaceSignInPage({ params }: Props) {
       </section>
 
       <section className="sign-in-panel">
-        <Link className="sign-in-back" href={`/s/${school.slug}`}>← Back to workspaces</Link>
+        <Link className="sign-in-back" href={school ? `/s/${school.slug}` : "/schools"}>
+          ← {school ? "Back to workspaces" : "Find your school"}
+        </Link>
         <div className="sign-in-content">
           <span className="eyebrow">Your {workspace.label.toLocaleLowerCase()} workspace</span>
           <h2>Good to see you.</h2>
-          <p className="sign-in-intro">Sign in to your {school.name} workspace.</p>
-          <div className="sign-in-access-card">
-            <span className="sign-in-access-icon">✳</span>
-            <div>
-              <strong>Secure access is the next step</strong>
-              <p>
-                This preview does not accept passwords. Account sign-in will be enabled
-                after school membership and identity services are connected.
-              </p>
-            </div>
-          </div>
-          <button className="button button-dark sign-in-disabled" disabled type="button">
-            Secure sign-in coming soon <span aria-hidden="true">→</span>
-          </button>
+          <p className="sign-in-intro">
+            Sign in to {school ? `${school.name}’s` : "your school"} workspace. Membership is verified before access.
+          </p>
+          <WorkspaceSignIn school={school} schoolSlug={schoolSlug} workspace={workspace} />
           <div className="sign-in-divider"><span>School code</span></div>
-          <div className="sign-in-school-code">
-            <span>{school.schoolCode}</span>
-            <small>A school identifier, not a password</small>
-          </div>
+          {school ? (
+            <div className="sign-in-school-code">
+              <span>{school.schoolCode}</span>
+              <small>A school identifier, not a password</small>
+            </div>
+          ) : (
+            <p className="sign-in-security-note">A private school’s details are shown only after membership is verified.</p>
+          )}
           <p className="sign-in-security-note"><span aria-hidden="true">♢</span> Your school verifies access to every workspace.</p>
         </div>
       </section>

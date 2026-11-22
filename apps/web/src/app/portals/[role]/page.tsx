@@ -69,7 +69,7 @@ export default async function PortalPage({ params }: Props) {
           <span aria-hidden="true">✳</span>
           <div>
             <strong>This workspace is taking shape</strong>
-            This first preview maps the experience. Secure sign-in, permissions and live school data will be added as the platform is built.
+            This page previews planned tools. Secure school sign-in and membership checks are available from Find your school; full role workspaces will be built in stages.
           </div>
         </div>
         <div className="portal-page-footer">

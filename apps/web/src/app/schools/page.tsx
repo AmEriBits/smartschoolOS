@@ -43,8 +43,8 @@ export default function SchoolsPage() {
           <div className="directory-private-note">
             <span aria-hidden="true">✳</span>
             <p>
-              Don’t see your school? It may be private. Ask your school administrator for
-              its unique school code or <Link href="/schools/new">start a school setup</Link>.
+              Don’t see your school? It may be private. Ask your administrator for a
+              workspace invitation link or <Link href="/schools/new">start a school setup</Link>.
             </p>
           </div>
         </div>

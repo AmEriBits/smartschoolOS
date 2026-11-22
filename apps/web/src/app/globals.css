@@ -2168,6 +2168,37 @@ a {
   text-align: center;
 }
 
+.onboarding-auth-switch,
+.onboarding-signout {
+  width: 100%;
+  padding: 3px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.onboarding-message {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-left: 2px solid #d7b36f;
+  background: #fbf6e9;
+  color: #836c45;
+  font-size: 9px;
+  line-height: 1.6;
+}
+
+.onboarding-error {
+  border-color: #c97b6f;
+  background: #fcf1ee;
+  color: #9b5046;
+}
+
+.onboarding-success {
+  border-color: #82a46d;
+  background: #f0f6eb;
+  color: #52744d;
+}
+
 .onboarding-confirmation {
   padding-top: 26px;
 }
@@ -2646,6 +2677,108 @@ a {
   color: #78837a;
   font-size: 9px;
   line-height: 1.7;
+}
+
+.sign-in-form {
+  display: grid;
+  gap: 13px;
+  margin-top: 24px;
+}
+
+.sign-in-password-form {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.sign-in-password-form label {
+  display: grid;
+  gap: 7px;
+  color: #526055;
+  font-size: 9px;
+  font-weight: 620;
+}
+
+.sign-in-password-form input {
+  width: 100%;
+  min-height: 39px;
+  padding: 0 10px;
+  border: 1px solid #dfe6dc;
+  border-radius: 5px;
+  outline: none;
+  background: #fff;
+  color: #314238;
+  font: inherit;
+}
+
+.sign-in-password-form .button {
+  border: 0;
+  cursor: pointer;
+  font-size: 10px;
+}
+
+.sign-in-form label {
+  display: grid;
+  gap: 7px;
+  color: #526055;
+  font-size: 10px;
+  font-weight: 620;
+}
+
+.sign-in-form input {
+  width: 100%;
+  min-height: 43px;
+  padding: 0 12px;
+  border: 1px solid #dfe6dc;
+  border-radius: 5px;
+  outline: none;
+  background: #fff;
+  color: #314238;
+  font: inherit;
+  font-size: 11px;
+}
+
+.sign-in-form input:focus {
+  border-color: #8fac70;
+  box-shadow: 0 0 0 3px #8fac701e;
+}
+
+.sign-in-form .button {
+  width: 100%;
+  margin-top: 2px;
+  border: 0;
+  cursor: pointer;
+}
+
+.sign-in-form .button:disabled {
+  cursor: wait;
+  opacity: .65;
+}
+
+.sign-in-error {
+  margin: 0;
+  color: #9b5046;
+  font-size: 9px;
+  line-height: 1.6;
+}
+
+.sign-in-auth-context {
+  margin: 20px 0 -12px;
+  color: #7c867d;
+  font-size: 9px;
+  line-height: 1.6;
+}
+
+.sign-in-secondary-action {
+  margin-top: 11px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #59714f;
+  cursor: pointer;
+  font: inherit;
+  font-size: 9px;
+  font-weight: 650;
 }
 
 .sign-in-disabled {

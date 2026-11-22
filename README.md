@@ -4,8 +4,8 @@ SmartSchools is a connected school platform for academics, AI-supported learning
 
 ## Monorepo
 
-- `apps/web` — Next.js public website, school discovery, onboarding preview and tenant-branded role entry.
-- `apps/platform-console` — Internal SmartSchools operations dashboard prototype (not connected to live data).
+- `apps/web` — Next.js public website, school discovery, authenticated school applications and tenant role entry.
+- `apps/platform-console` — Internal SmartSchools operations console for authorized application review and tenant activation.
 - `apps/api` — NestJS modular backend foundation.
 - `packages/*` — Shared contracts and UI can be added here as product surfaces grow.
 - `infra` — Local development services and deployment infrastructure.
@@ -22,13 +22,31 @@ cp .env.example .env
 npm run dev
 ```
 
-The website and school entry run at `http://localhost:3000`; the platform console prototype runs at `http://localhost:3002`; the API health endpoint is `http://localhost:4000/api/health`.
+The website and school entry run at `http://localhost:3000`; the platform console runs at `http://localhost:3002`; the API health endpoint is `http://localhost:4000/api/health`.
 
-Start local Postgres (with pgvector) and Redis when needed:
+Start local Postgres (with pgvector) and Redis when needed. Postgres is published on port `55432` by default to avoid common host PostgreSQL conflicts:
 
 ```bash
 npm run infra:up
+npm run db:migrate --workspace=@smartschools/api
 ```
+
+### Supabase setup
+
+The onboarding flow uses Supabase Auth and PostgreSQL. Create a Supabase project, then configure:
+
+- In the repository-root `.env`, set `DATABASE_URL`, `DIRECT_URL`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `WEB_ORIGIN`, and `SCHOOL_PORTAL_ORIGIN`. Use the Supabase pooler URL for `DATABASE_URL` in serverless deployments and a direct or session-pooler URL for `DIRECT_URL` migrations. The service-role key is server-only and must never use a `NEXT_PUBLIC_` name. `SUPABASE_ANON_KEY` remains a supported legacy alternative to `SUPABASE_PUBLISHABLE_KEY`.
+- In the web and Platform Console runtime environments, set `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_SUPABASE_URL`, and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. `NEXT_PUBLIC_SUPABASE_ANON_KEY` remains a supported legacy alternative. For local Next.js development, put these in `apps/web/.env.local` and `apps/platform-console/.env.local`; use Vercel environment settings for deployments.
+- Enable email sign-in and add local and production app URL patterns to Supabase Auth’s allowed redirect URLs. School-admin invitations return to `/s/{schoolSlug}/workspace/school-admin`.
+- Configure API CORS `WEB_ORIGIN` with the allowed public web and console origins, separated by commas. Set `SCHOOL_PORTAL_ORIGIN` to the single origin that serves school sign-in and invitation callbacks; it is also allowed by API CORS.
+
+Create the first platform operator by signing that person up in Supabase Auth, then set their Auth user UUID and email as `PLATFORM_OPERATOR_USER_ID` and `PLATFORM_OPERATOR_EMAIL` in `.env` and run:
+
+```bash
+npm run db:seed-operator --workspace=@smartschools/api
+```
+
+Only seeded, active operator accounts can review or provision schools. Approval creates a private onboarding tenant. The first administrator is either assigned from the verified applicant account or invited to the administrator email entered on the application. The tenant becomes publicly discoverable only after its administrator accepts access and an operator activates the school.
 
 ## Product direction
 
@@ -38,14 +56,14 @@ Build in stages: tenant provisioning and secure school membership; school struct
 
 ### School discovery and workspace access
 
-- `/schools` is the school finder; `/s/[schoolSlug]` is the school-branded workspace chooser. The current directory contains sample schools only.
-- `/schools/new` previews school onboarding. It does not create a tenant or save or send submitted details.
-- A production directory should list only schools that opt in to discovery; private schools should be reachable by their school-provided code or link.
+- `/schools` lists active, discoverable schools from the API; `/s/[schoolSlug]` is the school-branded workspace chooser.
+- `/schools/new` requires a verified Supabase account and persists a school application in PostgreSQL.
+- The Platform Console reviews applications, provisions private tenants, records audit events, invites the first administrator, retries failed invitations, and activates schools.
+- Public school discovery returns only active, discoverable tenants. Invited administrators can reach a private workspace through their invitation link without exposing that school in the public directory.
 - A school UUID is an internal identifier. A public slug or school code helps find the school but is never a password. Authentication must verify the user's active school membership and role after school selection.
 - Workspace choices include school administrator, teacher, student and parent/guardian. Transport access is enabled per school rather than shown as a universal role.
-- `apps/platform-console` shows illustrative metrics and records only. It must not be exposed as an operational console until platform authentication, authorization, tenant provisioning and audit logging are implemented.
-
-The sign-in screen is intentionally non-functional until identity and membership checks are connected. Do not enter real credentials in the preview.
+- The Platform Console UI requires Supabase sign-in, and all platform data/actions are separately protected by the API’s operator allowlist.
+- The initial sign-in flow verifies school membership. Full academic and operational dashboards are subsequent build phases.
 
 The school is the shared source of truth behind each role-based workspace. The core hierarchy is:
 
@@ -80,11 +98,11 @@ The intended backend is a NestJS modular monolith with tenant-aware identity and
 
 ## Deployment
 
-The Next.js website and school entry (`apps/web`) are deployed at [smartschool-os-chi.vercel.app](https://smartschool-os-chi.vercel.app). Its Vercel project uses `apps/web` as the Root Directory. The school directory currently contains sample records, and the school sign-in is a non-functional preview.
+The Next.js website and school entry (`apps/web`) are deployed at [smartschool-os-chi.vercel.app](https://smartschool-os-chi.vercel.app). Its Vercel project uses `apps/web` as the Root Directory. Configure its public API and Supabase Auth variables before using onboarding or sign-in.
 
-The Platform Console (`apps/platform-console`) runs locally at `http://localhost:3002` and is not deployed. It contains illustrative data only and must not be exposed as an operational console until platform authentication, authorization, provisioning and auditing are implemented.
+The Platform Console (`apps/platform-console`) runs locally at `http://localhost:3002` and is not deployed. Deploy it only after setting its public API/Auth variables and confirming the API’s operator allowlist and CORS configuration.
 
-The NestJS API (`apps/api`) is deployed separately at [smartschools-api.vercel.app](https://smartschools-api.vercel.app), with `apps/api` as its Root Directory and GitHub deployments enabled from `main`. Its production `WEB_ORIGIN` is set to the website origin for CORS. The API currently provides only `/api/health`; it has no database, identity or school workflows yet. Managed data services and production environment variables are required before implementing those workflows. Do not use the development credentials in `.env.example` in production.
+The NestJS API (`apps/api`) is deployed separately at [smartschools-api.vercel.app](https://smartschools-api.vercel.app), with `apps/api` as its Root Directory and GitHub deployments enabled from `main`. Configure `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, and `WEB_ORIGIN` in its production environment. Use the Supabase pooler URL for `DATABASE_URL` and a direct or session-pooler URL for `DIRECT_URL`; apply migrations from a trusted environment with `npm run db:deploy --workspace=@smartschools/api`. Do not use the development credentials in `.env.example` in production.
 
 ## Suggested delivery order
 

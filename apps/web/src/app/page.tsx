@@ -334,7 +334,7 @@ export default function Home() {
             </Link>
           ))}
         </div>
-        <p className="preview-disclaimer">Choose your school before entering a workspace. Directory records are sample data; secure sign-in and live school records are the next build stages.</p>
+        <p className="preview-disclaimer">Choose your school before entering a workspace. The public directory lists active schools, and every role is checked against its school membership.</p>
       </section>
 
       <section className="principles-section">
