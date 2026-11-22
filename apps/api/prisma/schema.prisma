@@ -36,6 +36,12 @@ enum SchoolMembershipStatus {
   SUSPENDED
 }
 
+enum AcademicYearStatus {
+  PLANNED
+  ACTIVE
+  COMPLETED
+}
+
 model SchoolApplication {
   id                 String                  @id @default(uuid()) @db.Uuid
   schoolName         String
@@ -68,10 +74,184 @@ model School {
   discoverable      Boolean            @default(false)
   application       SchoolApplication?
   memberships       SchoolMembership[]
+  campuses          Campus[]
+  academicYears     AcademicYear[]
+  grades            Grade[]
+  subjects          Subject[]
+  classArms         ClassArm[]
+  subjectOfferings  SubjectOffering[]
+  students          Student[]
+  studentEnrollments StudentEnrollment[]
+  teacherAssignments TeacherAssignment[]
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
 
   @@index([status, discoverable, name])
+}
+
+model Campus {
+  id          String   @id @default(uuid()) @db.Uuid
+  schoolId    String   @db.Uuid
+  name        String
+  code        String?
+  address     String?
+  isMainSite  Boolean  @default(false)
+  school      School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  classArms   ClassArm[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([schoolId, name])
+  @@unique([schoolId, code])
+  @@index([schoolId, isMainSite])
+}
+
+model AcademicYear {
+  id        String            @id @default(uuid()) @db.Uuid
+  schoolId  String            @db.Uuid
+  name      String
+  startsOn  DateTime          @db.Date
+  endsOn    DateTime          @db.Date
+  status    AcademicYearStatus @default(PLANNED)
+  school    School            @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  terms     Term[]
+  classArms ClassArm[]
+  studentEnrollments StudentEnrollment[]
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  @@unique([schoolId, name])
+  @@index([schoolId, startsOn])
+}
+
+model Term {
+  id             String       @id @default(uuid()) @db.Uuid
+  academicYearId String       @db.Uuid
+  name           String
+  startsOn       DateTime     @db.Date
+  endsOn         DateTime     @db.Date
+  order          Int
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
+  subjectOfferings SubjectOffering[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([academicYearId, name])
+  @@unique([academicYearId, order])
+  @@index([academicYearId, startsOn])
+}
+
+model Grade {
+  id          String   @id @default(uuid()) @db.Uuid
+  schoolId    String   @db.Uuid
+  name        String
+  displayOrder Int     @default(0)
+  school      School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  classArms   ClassArm[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([schoolId, name])
+  @@index([schoolId, displayOrder])
+}
+
+model ClassArm {
+  id             String       @id @default(uuid()) @db.Uuid
+  schoolId       String       @db.Uuid
+  campusId       String       @db.Uuid
+  academicYearId String       @db.Uuid
+  gradeId        String       @db.Uuid
+  name           String
+  school         School       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  campus         Campus       @relation(fields: [campusId], references: [id], onDelete: Restrict)
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  grade          Grade        @relation(fields: [gradeId], references: [id], onDelete: Restrict)
+  subjectOfferings SubjectOffering[]
+  studentEnrollments StudentEnrollment[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([academicYearId, campusId, gradeId, name])
+  @@index([schoolId, academicYearId])
+  @@index([campusId, gradeId])
+}
+
+model Subject {
+  id          String            @id @default(uuid()) @db.Uuid
+  schoolId    String            @db.Uuid
+  name        String
+  code        String?
+  school      School            @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  offerings   SubjectOffering[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@unique([schoolId, name])
+  @@unique([schoolId, code])
+  @@index([schoolId, name])
+}
+
+model SubjectOffering {
+  id          String   @id @default(uuid()) @db.Uuid
+  schoolId    String   @db.Uuid
+  classArmId  String   @db.Uuid
+  subjectId   String   @db.Uuid
+  termId      String   @db.Uuid
+  school      School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  classArm    ClassArm @relation(fields: [classArmId], references: [id], onDelete: Cascade)
+  subject     Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  term        Term     @relation(fields: [termId], references: [id], onDelete: Cascade)
+  teacherAssignments TeacherAssignment[]
+  createdAt   DateTime @default(now())
+
+  @@unique([classArmId, subjectId, termId])
+  @@index([schoolId, termId])
+}
+
+model Student {
+  id            String              @id @default(uuid()) @db.Uuid
+  schoolId      String              @db.Uuid
+  firstName     String
+  lastName      String
+  studentNumber String?
+  school        School              @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  enrollments   StudentEnrollment[]
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  @@unique([schoolId, studentNumber])
+  @@index([schoolId, lastName, firstName])
+}
+
+model StudentEnrollment {
+  id             String       @id @default(uuid()) @db.Uuid
+  schoolId       String       @db.Uuid
+  studentId      String       @db.Uuid
+  classArmId     String       @db.Uuid
+  academicYearId String       @db.Uuid
+  school         School       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  student        Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  classArm       ClassArm     @relation(fields: [classArmId], references: [id], onDelete: Restrict)
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  createdAt      DateTime     @default(now())
+
+  @@unique([studentId, academicYearId])
+  @@index([schoolId, classArmId, academicYearId])
+}
+
+model TeacherAssignment {
+  id                  String           @id @default(uuid()) @db.Uuid
+  schoolId            String           @db.Uuid
+  teacherMembershipId String           @db.Uuid
+  subjectOfferingId   String           @db.Uuid
+  school              School           @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  teacher             SchoolMembership @relation(fields: [teacherMembershipId], references: [id], onDelete: Cascade)
+  subjectOffering     SubjectOffering  @relation(fields: [subjectOfferingId], references: [id], onDelete: Cascade)
+  createdAt           DateTime         @default(now())
+
+  @@unique([teacherMembershipId, subjectOfferingId])
+  @@index([schoolId, teacherMembershipId])
+  @@index([schoolId, subjectOfferingId])
 }
 
 model SchoolMembership {
@@ -82,6 +262,7 @@ model SchoolMembership {
   role        SchoolMembershipRole
   status      SchoolMembershipStatus @default(INVITE_PENDING)
   school      School                 @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  teacherAssignments TeacherAssignment[]
   createdAt   DateTime               @default(now())
   acceptedAt  DateTime?
   updatedAt   DateTime               @updatedAt

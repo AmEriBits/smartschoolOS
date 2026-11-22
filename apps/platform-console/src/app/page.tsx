@@ -28,6 +28,8 @@ type School = {
   memberships: { email: string; status: string }[];
 };
 
+type SchoolStatusFilter = "ALL" | School["status"];
+
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en-NG", { dateStyle: "medium" }).format(new Date(value));
 }
@@ -37,6 +39,8 @@ export default function PlatformConsolePage() {
   const [session, setSession] = useState<Session | null>(null);
   const [applications, setApplications] = useState<Application[]>([]);
   const [schools, setSchools] = useState<School[]>([]);
+  const [schoolSearch, setSchoolSearch] = useState("");
+  const [schoolStatusFilter, setSchoolStatusFilter] = useState<SchoolStatusFilter>("ALL");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [authLoading, setAuthLoading] = useState(true);
@@ -244,12 +248,32 @@ export default function PlatformConsolePage() {
 
   const activeSchools = schools.filter((school) => school.status === "ACTIVE").length;
   const onboardingSchools = schools.filter((school) => school.status === "ONBOARDING").length;
+  const suspendedSchools = schools.filter((school) => school.status === "SUSPENDED").length;
+  const searchTerm = schoolSearch.trim().toLocaleLowerCase();
+  const filteredSchools = schools.filter((school) => {
+    const matchesStatus = schoolStatusFilter === "ALL" || school.status === schoolStatusFilter;
+    const searchableValues = [
+      school.name,
+      school.location,
+      school.slug,
+      school.schoolCode,
+      ...school.memberships.map((membership) => membership.email),
+    ];
+    const matchesSearch = !searchTerm || searchableValues.some((value) => value.toLocaleLowerCase().includes(searchTerm));
+    return matchesStatus && matchesSearch;
+  });
+  const schoolStatusFilters: { id: SchoolStatusFilter; label: string; count: number }[] = [
+    { id: "ALL", label: "All schools", count: schools.length },
+    { id: "ONBOARDING", label: "Onboarding", count: onboardingSchools },
+    { id: "ACTIVE", label: "Active", count: activeSchools },
+    { id: "SUSPENDED", label: "Suspended", count: suspendedSchools },
+  ];
 
   return (
     <main className="console-shell">
       <aside className="console-sidebar">
         <Link className="console-brand" href="/" aria-label="SmartSchools Platform Console">
-          <span className="console-brand-mark">S</span>
+          <span className="console-brand-mark brand-symbol" aria-hidden="true" />
           <span>smart<span>schools</span><small>PLATFORM CONSOLE</small></span>
         </Link>
         <div className="console-nav-label">PLATFORM</div>
@@ -324,24 +348,24 @@ export default function PlatformConsolePage() {
 
               <section className="console-metrics" aria-label="Platform metrics">
                 <article className="console-metric-card">
+                  <div><span>Schools in platform</span><b>↗</b></div>
+                  <strong>{schools.length}</strong>
+                  <small><i className="metric-dot blue" /> Tenant records under management</small>
+                </article>
+                <article className="console-metric-card">
                   <div><span>Active schools</span><b>↗</b></div>
-                  <strong>{activeSchools.toString().padStart(2, "0")}</strong>
+                  <strong>{activeSchools}</strong>
                   <small><i className="metric-dot green" /> Publicly discoverable tenants</small>
                 </article>
                 <article className="console-metric-card">
                   <div><span>In onboarding</span><b>↗</b></div>
-                  <strong>{onboardingSchools.toString().padStart(2, "0")}</strong>
+                  <strong>{onboardingSchools}</strong>
                   <small><i className="metric-dot gold" /> Private tenant setup</small>
                 </article>
                 <article className="console-metric-card">
-                  <div><span>Applications in review</span><b>↗</b></div>
-                  <strong>{applications.length.toString().padStart(2, "0")}</strong>
+                  <div><span>Awaiting review</span><b>↗</b></div>
+                  <strong>{applications.length}</strong>
                   <small><i className="metric-dot blue" /> Awaiting an operator decision</small>
-                </article>
-                <article className="console-metric-card">
-                  <div><span>Directory visibility</span><b>↗</b></div>
-                  <strong className="metric-status">Verified</strong>
-                  <small><i className="metric-dot green" /> Active schools only</small>
                 </article>
               </section>
 
@@ -385,15 +409,40 @@ export default function PlatformConsolePage() {
 
                 <section className="console-panel console-schools" id="schools">
                   <div className="console-panel-heading">
-                    <div><span className="console-eyebrow">TENANT DIRECTORY</span><h2>Schools</h2></div>
+                    <div><span className="console-eyebrow">TENANT CONTROL</span><h2>Schools</h2></div>
                     <span className="console-panel-count">{schools.length} total</span>
                   </div>
-                  {loading ? <p className="console-empty">Loading schools…</p> : schools.length ? (
+                  <div className="console-directory-controls">
+                    <label className="console-search">
+                      <span aria-hidden="true">⌕</span>
+                      <input
+                        aria-label="Search schools"
+                        onChange={(event) => setSchoolSearch(event.target.value)}
+                        placeholder="Search by school, location, code or admin"
+                        type="search"
+                        value={schoolSearch}
+                      />
+                    </label>
+                    <div className="console-status-filters" aria-label="Filter schools by status" role="group">
+                      {schoolStatusFilters.map((filter) => (
+                        <button
+                          aria-pressed={schoolStatusFilter === filter.id}
+                          className={schoolStatusFilter === filter.id ? "is-selected" : ""}
+                          key={filter.id}
+                          onClick={() => setSchoolStatusFilter(filter.id)}
+                          type="button"
+                        >
+                          {filter.label} <span>{filter.count}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  {loading ? <p className="console-empty">Loading schools…</p> : filteredSchools.length ? (
                     <div className="console-table-wrap">
                       <table>
                         <thead><tr><th>School</th><th>Status</th><th>Administrator</th><th>Actions</th></tr></thead>
                         <tbody>
-                          {schools.map((school) => {
+                          {filteredSchools.map((school) => {
                             const administrator = school.memberships[0];
                             return (
                               <tr key={school.id}>
@@ -404,7 +453,12 @@ export default function PlatformConsolePage() {
                                   </div>
                                 </td>
                                 <td><span className={`console-status status-${school.status.toLowerCase()}`}><i />{school.status}</span></td>
-                                <td className="console-date">{administrator?.status ?? "Not invited"}</td>
+                                <td>
+                                  <div className="console-admin-details">
+                                    <strong>{administrator?.email ?? "Not assigned"}</strong>
+                                    <small>{administrator?.status ?? "No administrator invitation"}</small>
+                                  </div>
+                                </td>
                                 <td>
                                   <div className="console-row-actions">
                                     {administrator?.status === "INVITE_FAILED" || administrator?.status === "INVITE_PENDING" ? (
@@ -422,7 +476,11 @@ export default function PlatformConsolePage() {
                       </table>
                     </div>
                   ) : (
-                    <p className="console-empty">{error ? "Schools could not be loaded." : "No schools have been provisioned yet."}</p>
+                    <p className="console-empty">
+                      {schools.length ? (
+                        <>No schools match these filters. <button className="console-reset-filters" onClick={() => { setSchoolSearch(""); setSchoolStatusFilter("ALL"); }} type="button">Clear filters</button></>
+                      ) : error ? "Schools could not be loaded." : "No schools have been provisioned yet."}
+                    </p>
                   )}
                   <p className="console-sample-caption">Only active, discoverable schools appear in the public directory.</p>
                 </section>

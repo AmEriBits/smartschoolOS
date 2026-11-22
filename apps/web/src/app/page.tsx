@@ -191,19 +191,21 @@ export default function Home() {
           <div className="hero-art" aria-label="Illustration of connected school workspaces">
             <div className="orbit orbit-one" />
             <div className="orbit orbit-two" />
-            <div className="hero-orbit-label label-academics">Academics</div>
-            <div className="hero-orbit-label label-learning">Learning</div>
-            <div className="hero-orbit-label label-family">Family</div>
-            <div className="hero-orbit-label label-teaching">Teaching</div>
-            <div className="hero-orbit-label label-school">School life</div>
+            <div className="hero-orbit-track" aria-hidden="true">
+              <div className="hero-orbit-label label-academics">Academics</div>
+              <div className="hero-orbit-label label-learning">Learning</div>
+              <div className="hero-orbit-label label-family">Family</div>
+              <div className="hero-orbit-label label-teaching">Teaching</div>
+              <div className="hero-orbit-label label-school">School life</div>
+              <span className="orbit-node node-one" />
+              <span className="orbit-node node-two" />
+              <span className="orbit-node node-three" />
+              <span className="orbit-node node-four" />
+            </div>
             <div className="hero-center">
               <span className="center-spark">✳</span>
               <span>One connected<br />school community</span>
             </div>
-            <span className="orbit-node node-one" />
-            <span className="orbit-node node-two" />
-            <span className="orbit-node node-three" />
-            <span className="orbit-node node-four" />
           </div>
 
           <div className="hero-foot">

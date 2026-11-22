@@ -34,7 +34,7 @@ export class SupabaseAuthService {
 
     if (error || !data.user) {
       throw new ServiceUnavailableException(
-        `Supabase could not invite the school administrator${error?.message ? `: ${error.message}` : "."}`,
+        `Supabase could not send the invitation${error?.message ? `: ${error.message}` : "."}`,
       );
     }
 

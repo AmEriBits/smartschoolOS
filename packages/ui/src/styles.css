@@ -1,24 +1,33 @@
+:root {
+  color-scheme: light;
+  --ss-ocean-950: #002f43;
+  --ss-ocean-900: #064459;
+  --ss-ocean-800: #0b6273;
+  --ss-turquoise: #00c6c2;
+  --ss-turquoise-strong: #00aeb0;
+  --ss-turquoise-soft: #e4f8f7;
+  --ss-purple: #6f49eb;
+  --ss-purple-soft: #f0edff;
+  --ss-orange: #ff891f;
+  --ss-orange-soft: #fff1e3;
+  --ss-cyan: #1acddb;
+  --ss-page: #f3f9fa;
+  --ss-surface: #fff;
+  --ss-border: #dce8eb;
+  --ss-muted: #607984;
+}
+
 .brand-symbol {
-  position: relative;
   display: inline-block;
-  width: 25px;
-  height: 25px;
+  width: 36px;
+  height: 28px;
   flex: 0 0 auto;
-  transform: rotate(45deg);
+  background: url("./assets/connected-learning-emblem.png") center / contain no-repeat;
 }
 
-.brand-symbol span {
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  border-radius: 4px 4px 2px 4px;
-  background: #9ac956;
+.brand-symbol > span {
+  display: none;
 }
-
-.brand-symbol span:nth-child(1) { top: 0; left: 0; }
-.brand-symbol span:nth-child(2) { top: 0; right: 0; background: #c6e96a; }
-.brand-symbol span:nth-child(3) { right: 0; bottom: 0; background: #6ea485; }
-.brand-symbol span:nth-child(4) { bottom: 0; left: 0; background: #a4ca87; }
 
 .wordmark-strong {
   font-weight: 720;
@@ -50,16 +59,16 @@
 }
 
 .ss-button-primary {
-  background: #172a2a;
+  background: var(--ss-ocean-950);
   color: #fff;
 }
 
 .ss-button-primary:hover:not(:disabled) {
-  background: #28403d;
+  background: var(--ss-ocean-800);
 }
 
 .ss-button-secondary {
-  border-color: #dfe6dc;
-  background: #fffefa;
-  color: #314238;
+  border-color: var(--ss-border);
+  background: var(--ss-surface);
+  color: var(--ss-ocean-950);
 }

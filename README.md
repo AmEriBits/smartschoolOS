@@ -52,6 +52,29 @@ Only seeded, active operator accounts can review or provision schools. Approval 
 
 Build in stages: tenant provisioning and secure school membership; school structure; curriculum intelligence; assessment and mastery; personalized learning and teacher tools; student and family experiences; then operations, finance, and physical innovation infrastructure. Curriculum extraction, official assessment outcomes, and AI-generated teaching resources require human review and approval.
 
+### Master principle
+
+**Build the common foundation once. Let every SmartSchools module reuse it.** Add capabilities through bounded modules and replaceable integrations, rather than rebuilding identity, student data, curriculum, or permissions for each feature. Shared services should have clear contracts and tenant-aware access controls so product modules can evolve independently without fragmenting the platform's source of truth.
+
+### Shared intelligence layer
+
+AI and analytics are shared platform capabilities, not isolated feature implementations. Product modules use the common intelligence layer and approved, permission-scoped data:
+
+- **Curriculum ingestion and knowledge engine:** turn approved curricula and resources into structured, versioned, searchable knowledge with source provenance.
+- **Curriculum knowledge graph:** represent subjects, topics, concepts, objectives, skills, prerequisites, and cross-subject relationships.
+- **Student learning model:** maintain mastery estimates, learning history, misconceptions, interests, and evidence-backed progress.
+- **Assessment intelligence:** interpret assessment outcomes and estimate topic and concept mastery.
+- **Recommendation engine:** select appropriate next learning actions, practice, resources, and teacher interventions.
+- **AI tutor and specialist agents:** provide curriculum-grounded tutoring, teacher support, assessment assistance, project support, and pathway exploration.
+- **Retrieval-augmented generation (RAG):** retrieve approved curriculum and school resources to ground AI responses.
+- **AI orchestration:** route requests across replaceable model providers and manage prompts, context, cost, retries, and evaluation.
+- **Teacher intelligence:** surface class trends, students who may need support, and relevant resource suggestions.
+- **Analytics:** provide academic, engagement, attendance, financial, and operational insights.
+- **Optimisation engines:** solve timetable constraints and optimise transport routes and estimated arrival times.
+- **AI safety and evaluation:** apply age-appropriate controls, evaluate and monitor outputs, and support human review and escalation.
+
+Keep student models evidence-based and appropriately scoped; AI recommendations support learners and educators but do not replace teacher judgement or make unreviewed official decisions.
+
 ## What the school infrastructure looks like
 
 ### School discovery and workspace access
@@ -64,6 +87,7 @@ Build in stages: tenant provisioning and secure school membership; school struct
 - Workspace choices include school administrator, teacher, student and parent/guardian. Transport access is enabled per school rather than shown as a universal role.
 - The Platform Console UI requires Supabase sign-in, and all platform data/actions are separately protected by the API’s operator allowlist.
 - The initial sign-in flow verifies school membership. Full academic and operational dashboards are subsequent build phases.
+- Active school administrators can open `/s/{schoolSlug}/workspace/school-admin/setup` to create campuses, academic years and terms, grades, class arms, subjects, and subject offerings. The `/s/{schoolSlug}/workspace/school-admin/people` workspace adds school-scoped student roster profiles and class-year enrolments, teacher invitations, and teacher assignments to subject offerings. Student profiles do not require a student email or login; family linking and student access are separate future capabilities. People changes are administrator-only and audited.
 
 The school is the shared source of truth behind each role-based workspace. The core hierarchy is:
 
@@ -85,12 +109,12 @@ The AI should ground its output in the approved curriculum and the selected clas
 
 Teacher profiles, campus membership, subject/class assignments and timetables make up the teaching workspace. A scheduled class session links its teacher, class roster, subject and lesson. During the session, teachers can present resources, run activities, polls, quizzes or assignments, and record attendance. Student submissions and teacher feedback create evidence for topic-level progress and mastery. Recommendations can then suggest practice or a teacher intervention; teachers retain control of official outcomes.
 
-The student workspace builds from that same class and curriculum data: today's lessons, assigned work, guided practice, feedback and a revisable learning plan. The family workspace is a separate, permission-scoped view of linked children's progress, attendance and school communications.
+The student workspace builds from that same class and curriculum data: today's lessons, assigned work, guided practice, feedback and a revisable learning plan. The family workspace is a separate, permission-scoped view where a parent or guardian can follow each verified linked child's progress, attendance and school communications.
 
 ### Attendance and fees
 
 - **Attendance:** record present, late, absent or excused against a class session; retain who recorded or changed it; and send appropriate updates to verified family contacts. Manual attendance is the simplest first release, with QR or device integrations later.
-- **Fees:** create term-based invoices and charges linked to a student and school; let verified family accounts view statements and receipts; record payment attempts, confirmations, refunds and reconciliation as auditable events. A payment provider handles card or bank details—SmartSchools should not store raw payment credentials. Installments, reminders, family wallets and payroll are later phases.
+- **Fees:** create term-based invoices and charges linked to a student and school; let verified parents or guardians pay through an integrated payment provider and view statements and receipts for each linked child; record payment attempts, confirmations, refunds and reconciliation as auditable events. A payment provider handles card or bank details—SmartSchools should not store raw payment credentials. Installments, reminders, family wallets and payroll are later phases.
 
 ### Shared technical foundation
 

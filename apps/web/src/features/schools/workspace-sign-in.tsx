@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import Link from "next/link";
 import type { Session } from "@supabase/supabase-js";
 import { apiRequest } from "@/lib/api";
 import { getSupabaseBrowserClient } from "@/lib/supabase";
@@ -177,6 +178,16 @@ export function WorkspaceSignIn({ school, schoolSlug, workspace }: Props) {
                 {busy ? "Saving…" : "Set password"}
               </button>
             </form>
+          ) : null}
+          {workspace.id === "school-admin" && (!access.newlyAccepted || passwordSet) ? (
+            <div className="admin-access-actions">
+              <Link className="button button-dark" href={`/s/${encodeURIComponent(schoolSlug)}/workspace/school-admin/dashboard`}>
+                Open administrator dashboard <span aria-hidden="true">→</span>
+              </Link>
+              <Link className="admin-setup-shortcut" href={`/s/${encodeURIComponent(schoolSlug)}/workspace/school-admin/setup`}>
+                Continue school setup
+              </Link>
+            </div>
           ) : null}
           <button className="sign-in-secondary-action" onClick={() => void handleSignOut()} type="button">
             Sign out
