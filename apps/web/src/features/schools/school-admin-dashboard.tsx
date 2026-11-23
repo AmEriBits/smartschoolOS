@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ThemeToggle } from "@smartschools/ui/theme-toggle";
 import { useCallback, useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { apiRequest } from "@/lib/api";
@@ -194,6 +195,7 @@ export function SchoolAdminDashboard({ schoolSlug }: { schoolSlug: string }) {
         <header className="admin-topbar">
           <div className="admin-breadcrumb"><span>Workspace</span><b>/</b><strong>Overview</strong></div>
           <div className="admin-topbar-actions">
+            <ThemeToggle />
             <span className={`admin-status-pill admin-status-${dashboard.school.status.toLowerCase()}`}>
               <i />{dashboard.school.status === "ACTIVE" ? "School active" : "Onboarding"}
             </span>

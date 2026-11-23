@@ -94,6 +94,14 @@ a {
   color: var(--ss-ocean-800);
 }
 
+.header-actions,
+.tenant-header-actions,
+.setup-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .button {
   display: inline-flex;
   align-items: center;
@@ -1695,6 +1703,261 @@ a {
   }
 }
 
+html[data-theme="dark"] {
+  --ink: var(--ss-ocean-950);
+  --ink-soft: #c3d5da;
+  --paper: var(--ss-page);
+  --paper-white: var(--ss-surface);
+  --muted: var(--ss-muted);
+  --line: var(--ss-border);
+  --mint: var(--ss-turquoise-soft);
+}
+
+html[data-theme="dark"] body,
+html[data-theme="dark"] .portal-page,
+html[data-theme="dark"] .tenant-page,
+html[data-theme="dark"] .school-entry-page {
+  background: var(--ss-page);
+  color: #e4eef2;
+}
+
+html[data-theme="dark"] .wordmark {
+  color: #e4eef2;
+}
+
+html[data-theme="dark"] :is(
+  .desktop-nav,
+  .hero-note,
+  .hero-foot,
+  .intro-copy p,
+  .section-heading > p,
+  .school-copy > p,
+  .check-list,
+  .phase-note,
+  .portal-card p,
+  .preview-disclaimer,
+  .principle p,
+  .closing-content p,
+  .footer-brand p,
+  .footer-links a,
+  .intro-copy .text-link
+) {
+  color: #a7bbc3;
+}
+
+html[data-theme="dark"] :is(.school-sign-in, .admin-dashboard-message) {
+  background: var(--ss-page);
+}
+
+html[data-theme="dark"] :is(
+  .site-header,
+  .site-footer,
+  .portal-page-header,
+  .tenant-header,
+  .school-entry-main,
+  .school-directory-panel,
+  .school-directory-card,
+  .school-search,
+  .directory-private-note,
+  .school-empty-state,
+  .portal-card,
+  .school-entry-main,
+  .product-card,
+  .map-node,
+  .portal-module,
+  .tenant-identity,
+  .tenant-workspace-card,
+  .tenant-transport-note,
+  .sign-in-panel,
+  .sign-in-content,
+  .sign-in-access-card,
+  .setup-card,
+  .setup-inline-form,
+  .setup-message,
+  .admin-school-switcher,
+  .admin-metric-card,
+  .admin-panel,
+  .admin-progress-summary,
+  .admin-dashboard-message > section,
+  .school-people-summary article,
+  .people-inline-button,
+  .school-roster
+) {
+  border-color: var(--ss-border);
+  background-color: var(--ss-surface);
+  color: var(--ink);
+}
+
+html[data-theme="dark"] .school-map {
+  border-color: var(--ss-border);
+  background-color: var(--ss-surface-muted);
+  background-image: radial-gradient(rgb(96 168 177 / 26%) 0.7px, transparent 0.7px);
+}
+
+html[data-theme="dark"] :is(
+  .school-directory-card:hover,
+  .product-card:hover,
+  .tenant-workspace-card:hover,
+  .people-inline-button:hover
+) {
+  border-color: var(--ss-turquoise-strong);
+}
+
+html[data-theme="dark"] :is(
+  .product-card h3,
+  .school-entry-copy h1,
+  .school-entry-copy h1 span,
+  .portal-page-main h1,
+  .directory-panel-heading h2,
+  .map-node b,
+  .portal-module h2,
+  .portal-next-step strong,
+  .footer-links span,
+  .tenant-identity h1,
+  .tenant-workspace-heading h2,
+  .tenant-workspace-card h3,
+  .portal-card h3,
+  .sign-in-content h2,
+  .setup-card h2,
+  .setup-card h3,
+  .setup-message h1,
+  .admin-brand,
+  .admin-school-switcher strong,
+  .admin-welcome h1,
+  .admin-metric-card strong,
+  .admin-panel-heading h2,
+  .admin-dashboard-message h1,
+  .school-people-summary strong,
+  .people-record-copy strong,
+  .school-roster-heading strong
+) {
+  color: #e4eef2;
+}
+
+html[data-theme="dark"] :is(
+  .product-card p,
+  .map-node,
+  .portal-page-intro,
+  .portal-module p,
+  .portal-next-step,
+  .directory-private-note,
+  .directory-private-note p,
+  .school-entry-foot,
+  .school-directory-meta,
+  .footer-links a,
+  .footer-bottom,
+  .tenant-header-context,
+  .tenant-identity p,
+  .tenant-workspace-heading > p,
+  .tenant-workspace-card p,
+  .tenant-transport-note,
+  .tenant-preview-note,
+  .sign-in-intro,
+  .sign-in-auth-context,
+  .setup-intro,
+  .setup-card p,
+  .admin-school-switcher small,
+  .admin-nav-item,
+  .admin-welcome p,
+  .admin-metric-card p,
+  .admin-checklist-row,
+  .admin-term-row strong,
+  .admin-class-row strong,
+  .admin-coming-item strong,
+  .admin-dashboard-message p,
+  .school-people-summary span,
+  .people-form-note,
+  .people-record-copy small,
+  .school-roster li,
+  .school-roster-heading small
+) {
+  color: #a7bbc3;
+}
+
+html[data-theme="dark"] :is(
+  .school-entry-copy h1 span,
+  .closing-content h2 span
+) {
+  color: #72dfdc;
+}
+
+html[data-theme="dark"] :is(
+  .admin-sidebar,
+  .admin-topbar,
+  .setup-record-list > li,
+  .people-record-list > li,
+  .school-roster li,
+  .admin-term-row,
+  .admin-class-row,
+  .admin-coming-item
+) {
+  border-color: var(--ss-border);
+}
+
+html[data-theme="dark"] .admin-topbar {
+  background: rgb(16 43 56 / 94%);
+}
+
+html[data-theme="dark"] :is(
+  .admin-status-pill,
+  .admin-year-badge,
+  .admin-count-badge,
+  .admin-coming-badge,
+  .people-status
+) {
+  background: var(--ss-surface-muted);
+  color: #b6c8ce;
+}
+
+html[data-theme="dark"] :is(
+  .tenant-workspace-lavender .tenant-workspace-icon,
+  .tenant-workspace-peach .tenant-workspace-icon,
+  .tenant-workspace-blue .tenant-workspace-icon,
+  .portal-mint .portal-icon,
+  .portal-lavender .portal-icon,
+  .portal-peach .portal-icon,
+  .portal-blue .portal-icon,
+  .tone-blue
+) {
+  background: #193744;
+  color: #a8d7e3;
+}
+
+html[data-theme="dark"] :is(.portal-open, .tenant-switch-link, .tenant-workspace-action) {
+  color: #72dfdc;
+}
+
+html[data-theme="dark"] .button-dark {
+  background: var(--ss-ocean-950);
+  color: #fff;
+}
+
+html[data-theme="dark"] .portal-preview-label {
+  color: #b4edec;
+}
+
+html[data-theme="dark"] :is(input, select, textarea) {
+  border-color: var(--ss-border);
+  background-color: var(--ss-surface-muted);
+  color: #e4eef2;
+  color-scheme: dark;
+}
+
+html[data-theme="dark"] :is(input, select, textarea)::placeholder {
+  color: #839ba5;
+}
+
+html[data-theme="dark"] :is(
+  .school-search,
+  .setup-card input,
+  .setup-card select,
+  .setup-card textarea,
+  .sign-in-form input
+) {
+  background: var(--ss-surface-muted);
+  color: #e4eef2;
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -2331,6 +2594,8 @@ a {
   font-size: 10px;
   font-weight: 630;
 }
+
+.tenant-header-actions { gap: 14px; }
 
 .tenant-main {
   width: min(1000px, calc(100% - 48px));
@@ -3008,6 +3273,8 @@ a {
   border-radius: 16px;
   background: #fffefa;
 }
+
+.setup-header-actions { align-items: flex-start; }
 
 .setup-progress strong { font-size: 22px; letter-spacing: -1px; }
 .setup-progress span { color: #71807b; font-size: 11px; }

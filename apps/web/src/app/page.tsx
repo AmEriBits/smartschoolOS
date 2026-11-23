@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { ThemeToggle } from "@smartschools/ui/theme-toggle";
 
 const products = [
   {
@@ -157,9 +158,12 @@ export default function Home() {
             <a href="#for-schools">For schools</a>
             <Link href="/schools">Find your school</Link>
           </nav>
-          <Link className="button button-dark header-cta" href="/schools">
-            Find your school <ArrowIcon diagonal />
-          </Link>
+          <div className="header-actions">
+            <ThemeToggle />
+            <Link className="button button-dark header-cta" href="/schools">
+              Find your school <ArrowIcon diagonal />
+            </Link>
+          </div>
         </div>
       </header>
 

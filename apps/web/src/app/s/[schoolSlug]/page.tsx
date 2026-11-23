@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ThemeToggle } from "@smartschools/ui/theme-toggle";
 import { getSchoolBySlug, getSchoolInitials } from "@/lib/schools";
 import { workspaces } from "@/lib/workspaces";
 
@@ -33,7 +34,10 @@ export default async function SchoolWorkspacePage({ params }: Props) {
             <span>smart<span className="wordmark-strong">schools</span></span>
           </Link>
           <span className="tenant-header-context">School workspace</span>
-          <Link className="tenant-switch-link" href="/schools">Change school <span aria-hidden="true">↗</span></Link>
+          <div className="tenant-header-actions">
+            <ThemeToggle />
+            <Link className="tenant-switch-link" href="/schools">Change school <span aria-hidden="true">↗</span></Link>
+          </div>
         </div>
       </header>
 

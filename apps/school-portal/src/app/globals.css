@@ -713,3 +713,73 @@ a {
     animation-iteration-count: 1 !important;
   }
 }
+
+html[data-theme="dark"] {
+  --portal-ink: #e4eef2;
+  --portal-paper: var(--ss-page);
+  --portal-white: var(--ss-surface);
+  --portal-muted: #a0b4bd;
+}
+
+html[data-theme="dark"] body,
+html[data-theme="dark"] .tenant-page,
+html[data-theme="dark"] .tenant-header,
+html[data-theme="dark"] .sign-in-panel {
+  background: var(--portal-paper);
+  color: var(--portal-ink);
+}
+
+html[data-theme="dark"] .button-dark {
+  background: var(--ss-ocean-950);
+  color: #fff;
+}
+
+html[data-theme="dark"] :is(
+  .tenant-identity,
+  .tenant-workspace-card,
+  .tenant-transport-note,
+  .sign-in-access-card,
+  .sign-in-form input,
+  .sign-in-password-form input,
+  .workspace-card
+) {
+  border-color: var(--ss-border);
+  background: var(--portal-white);
+  color: #e4eef2;
+}
+
+html[data-theme="dark"] :is(
+  .tenant-identity h1,
+  .tenant-workspace-heading h2,
+  .tenant-workspace-card h3,
+  .sign-in-content h2,
+  .workspace-card h2,
+  .workspace-card h3
+) {
+  color: #e4eef2;
+}
+
+html[data-theme="dark"] :is(
+  .tenant-identity p,
+  .tenant-workspace-heading > p,
+  .tenant-workspace-card p,
+  .tenant-transport-note,
+  .tenant-preview-note,
+  .sign-in-intro,
+  .sign-in-auth-context,
+  .sign-in-security-note,
+  .workspace-card p
+) {
+  color: #a7bbc3;
+}
+
+html[data-theme="dark"] :is(input, select, textarea) {
+  border-color: var(--ss-border);
+  background: var(--ss-surface-muted);
+  color: #e4eef2;
+  color-scheme: dark;
+}
+
+html[data-theme="dark"] :is(input, select, textarea)::placeholder {
+  color: #839ba5;
+}

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState, type FormEvent, type ReactNode } from "react";
+import { ThemeToggle } from "@smartschools/ui/theme-toggle";
 import type { Session } from "@supabase/supabase-js";
 import { apiRequest } from "@/lib/api";
 import { getSupabaseBrowserClient } from "@/lib/supabase";
@@ -274,7 +275,10 @@ export function SchoolPeopleWorkspace({ schoolSlug }: { schoolSlug: string }) {
           <h1>People & class rosters</h1>
           <p className="setup-intro">Invite teachers, enrol students into the shared class structure, and connect teachers to subject offerings.</p>
         </div>
-        <div className="setup-progress"><strong>{people.students.length + people.teachers.length}</strong><span>people records</span></div>
+        <div className="setup-header-actions">
+          <ThemeToggle />
+          <div className="setup-progress"><strong>{people.students.length + people.teachers.length}</strong><span>people records</span></div>
+        </div>
       </header>
 
       {error ? <div className="setup-notice setup-notice-error" role="alert">{error}</div> : null}

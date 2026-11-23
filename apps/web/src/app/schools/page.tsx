@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SchoolDirectory } from "@/features/schools/school-directory";
+import { ThemeToggle } from "@smartschools/ui/theme-toggle";
 
 export const metadata = {
   title: "Find your school | SmartSchools",
@@ -15,9 +16,12 @@ export default function SchoolsPage() {
             <span className="brand-symbol" aria-hidden="true"><span /><span /><span /><span /></span>
             <span>smart<span className="wordmark-strong">schools</span></span>
           </Link>
-          <Link className="button button-dark header-cta" href="/schools/new">
-            Set up your school <span aria-hidden="true">↗</span>
-          </Link>
+          <div className="header-actions">
+            <ThemeToggle />
+            <Link className="button button-dark header-cta" href="/schools/new">
+              Set up your school <span aria-hidden="true">↗</span>
+            </Link>
+          </div>
         </div>
       </header>
 

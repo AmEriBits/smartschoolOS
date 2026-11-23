@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SchoolApplicationForm } from "@/features/schools/school-application-form";
+import { ThemeToggle } from "@smartschools/ui/theme-toggle";
 
 export const metadata = {
   title: "Set up your school | SmartSchools",
@@ -15,7 +16,10 @@ export default function NewSchoolPage() {
             <span className="brand-symbol" aria-hidden="true"><span /><span /><span /><span /></span>
             <span>smart<span className="wordmark-strong">schools</span></span>
           </Link>
-          <Link className="text-link" href="/schools">Find your school <span aria-hidden="true">↗</span></Link>
+          <div className="header-actions">
+            <ThemeToggle />
+            <Link className="text-link" href="/schools">Find your school <span aria-hidden="true">↗</span></Link>
+          </div>
         </div>
       </header>
       <section className="school-onboarding-main">

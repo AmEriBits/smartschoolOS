@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { ThemeToggle } from "@smartschools/ui/theme-toggle";
 import { isPortalRole, portalData } from "@/lib/portal-data";
 
 type Props = {
@@ -41,9 +42,12 @@ export default async function PortalPage({ params }: Props) {
             </span>
             <span>smart<span className="wordmark-strong">schools</span></span>
           </Link>
-          <Link className="button button-dark header-cta" href="/portals">
-            All workspaces <span aria-hidden="true">↗</span>
-          </Link>
+          <div className="header-actions">
+            <ThemeToggle />
+            <Link className="button button-dark header-cta" href="/portals">
+              All workspaces <span aria-hidden="true">↗</span>
+            </Link>
+          </div>
         </div>
       </header>
       <div className="portal-page-main">

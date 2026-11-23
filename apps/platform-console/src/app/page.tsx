@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import type { Session } from "@supabase/supabase-js";
+import { ThemeToggle } from "@smartschools/ui/theme-toggle";
 import { apiRequest } from "@/lib/api";
 import { getSupabaseBrowserClient } from "@/lib/supabase";
 
@@ -302,6 +303,7 @@ export default function PlatformConsolePage() {
         <header className="console-topbar">
           <div className="console-breadcrumb">Platform <span>/</span> Overview</div>
           <div className="console-topbar-actions">
+            <ThemeToggle />
             <span className="console-preview-chip"><i /> {session ? "Live records" : "Secure sign-in"}</span>
             {session ? <button className="console-mobile-signout" onClick={() => void handleSignOut()} type="button">Sign out</button> : null}
             {session ? <span className="console-top-avatar">SS</span> : null}

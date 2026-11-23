@@ -13,8 +13,21 @@
   --ss-cyan: #1acddb;
   --ss-page: #f3f9fa;
   --ss-surface: #fff;
+  --ss-surface-muted: #f8fbfb;
   --ss-border: #dce8eb;
   --ss-muted: #607984;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ss-page: #081b25;
+  --ss-surface: #102b38;
+  --ss-surface-muted: #142f3c;
+  --ss-border: #294653;
+  --ss-muted: #a0b4bd;
+  --ss-turquoise-soft: #123e46;
+  --ss-purple-soft: #2b2546;
+  --ss-orange-soft: #44301e;
 }
 
 .brand-symbol {
@@ -31,6 +44,45 @@
 
 .wordmark-strong {
   font-weight: 720;
+}
+
+.ss-theme-toggle {
+  display: inline-flex;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--ss-border);
+  border-radius: 12px;
+  background: var(--ss-surface);
+  color: var(--ss-ocean-950);
+  cursor: pointer;
+  font: inherit;
+  transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.ss-theme-toggle:hover {
+  border-color: var(--ss-turquoise-strong);
+}
+
+:root[data-theme="dark"] .ss-theme-toggle {
+  color: #e4eef2;
+}
+
+.ss-theme-toggle:focus-visible {
+  outline: 3px solid var(--ss-turquoise);
+  outline-offset: 3px;
+}
+
+.ss-theme-toggle svg {
+  width: 17px;
+  height: 17px;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.6;
 }
 
 .ss-button {
