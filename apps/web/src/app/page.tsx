@@ -156,6 +156,7 @@ export default function Home() {
             <a href="#platform">Platform</a>
             <a href="#how-it-works">How it works</a>
             <a href="#for-schools">For schools</a>
+            <Link href="/pricing">Pricing</Link>
             <Link href="/schools">Find your school</Link>
           </nav>
           <div className="header-actions">
@@ -391,6 +392,7 @@ export default function Home() {
             <a href="#platform">The platform</a>
             <a href="#how-it-works">Learning OS</a>
             <a href="#for-schools">For schools</a>
+            <Link href="/pricing">Pricing</Link>
           </div>
           <div className="footer-links">
             <span>Workspaces</span>
