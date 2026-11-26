@@ -54,6 +54,15 @@ export class SchoolPeopleController {
     return this.people.createStudent(slug, request.user, input);
   }
 
+  @Post("students/:studentId/credentials")
+  issueStudentCredentials(
+    @Param("schoolSlug") slug: string,
+    @Param("studentId", new ParseUUIDPipe()) studentId: string,
+    @Req() request: AuthenticatedRequest,
+  ) {
+    return this.people.issueStudentCredentials(slug, request.user, studentId);
+  }
+
   @Post("teacher-assignments")
   assignTeacher(
     @Param("schoolSlug") slug: string,

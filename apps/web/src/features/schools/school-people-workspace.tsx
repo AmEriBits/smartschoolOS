@@ -8,7 +8,7 @@ import { apiRequest } from "@/lib/api";
 import { getSupabaseBrowserClient } from "@/lib/supabase";
 
 type PeopleData = {
-  school: { id: string; name: string; slug: string };
+  school: { id: string; name: string; slug: string; status: string };
   teachers: {
     id: string;
     email: string;
@@ -20,6 +20,8 @@ type PeopleData = {
     firstName: string;
     lastName: string;
     studentNumber: string | null;
+    loginId: string | null;
+    loginMembership: { status: string; needsPasswordChange: boolean } | null;
     enrollments: {
       id: string;
       classArm: {
@@ -63,6 +65,12 @@ type PeopleData = {
   }[];
 };
 
+type StudentCredentials = {
+  student: { id: string; firstName: string; lastName: string };
+  loginId: string;
+  temporaryPassword: string;
+};
+
 function PeopleMessage({
   title,
   message,
@@ -97,6 +105,7 @@ export function SchoolPeopleWorkspace({ schoolSlug }: { schoolSlug: string }) {
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [issuedCredentials, setIssuedCredentials] = useState<StudentCredentials | null>(null);
 
   const loadPeople = useCallback(async (accessToken: string) => {
     setLoading(true);
@@ -216,6 +225,32 @@ export function SchoolPeopleWorkspace({ schoolSlug }: { schoolSlug: string }) {
     } finally {
       setBusy("");
     }
+
+  }
+
+  async function issueStudentCredentials(studentId: string) {
+    if (!session) return;
+    setBusy(studentId);
+    setError("");
+    setNotice("");
+    setIssuedCredentials(null);
+    try {
+      const credentials = await apiRequest<StudentCredentials>(
+        `/schools/${encodeURIComponent(schoolSlug)}/people/students/${encodeURIComponent(studentId)}/credentials`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${session.access_token}` },
+          body: JSON.stringify({}),
+        },
+      );
+      setIssuedCredentials(credentials);
+      setNotice(`Sign-in credentials issued for ${credentials.student.firstName} ${credentials.student.lastName}.`);
+      await loadPeople(session.access_token);
+    } catch (issueError) {
+      setError(issueError instanceof Error ? issueError.message : "Could not issue student sign-in.");
+    } finally {
+      setBusy("");
+    }
   }
 
   async function retryInvitation(membershipId: string) {
@@ -283,6 +318,26 @@ export function SchoolPeopleWorkspace({ schoolSlug }: { schoolSlug: string }) {
 
       {error ? <div className="setup-notice setup-notice-error" role="alert">{error}</div> : null}
       {notice ? <div className="setup-notice setup-notice-success" role="status">{notice}</div> : null}
+      {issuedCredentials ? (
+        <section className="student-credentials-notice" aria-label="One-time student sign-in credentials">
+          <div>
+            <span className="setup-eyebrow">SHARE THESE ONCE</span>
+            <h2>{issuedCredentials.student.firstName} {issuedCredentials.student.lastName}</h2>
+            <p>Give the student these sign-in details directly. The temporary password is shown only in this session.</p>
+          </div>
+          <dl>
+            <div><dt>Student ID</dt><dd>{issuedCredentials.loginId}</dd></div>
+            <div><dt>Temporary password</dt><dd>{issuedCredentials.temporaryPassword}</dd></div>
+          </dl>
+          <button
+            className="people-inline-button student-credentials-hide"
+            onClick={() => setIssuedCredentials(null)}
+            type="button"
+          >
+            Hide credentials
+          </button>
+        </section>
+      ) : null}
 
       <div className="school-people-summary" aria-label="People overview">
         <article><span>Students enrolled</span><strong>{enrolledCount.toLocaleString()}</strong></article>
@@ -307,7 +362,7 @@ export function SchoolPeopleWorkspace({ schoolSlug }: { schoolSlug: string }) {
             <div className="setup-field-row"><label>First name<input name="firstName" maxLength={80} required /></label><label>Last name<input name="lastName" maxLength={80} required /></label></div>
             <label>Student number <small>Optional</small><input name="studentNumber" maxLength={40} /></label>
             <label>Class group<select name="classArmId" required defaultValue=""><option value="" disabled>Select a class group</option>{people.classArms.map((arm) => <option key={arm.id} value={arm.id}>{arm.grade.name} {arm.name} · {arm.academicYear.name}</option>)}</select></label>
-            <p className="people-form-note">A roster profile does not require a student login or email address. Family linking can be added later.</p>
+            <p className="people-form-note">After enrolment, issue a school Student ID and temporary password from the class roster. Students set a new password at first sign-in.</p>
             <button className="setup-button" disabled={busy === "Student enrolled" || !people.classArms.length} type="submit">{busy === "Student enrolled" ? "Enrolling…" : "Add to class roster"}</button>
           </form>
         </section>
@@ -363,7 +418,35 @@ export function SchoolPeopleWorkspace({ schoolSlug }: { schoolSlug: string }) {
               return (
                 <section className="school-roster" key={arm.id}>
                   <div className="school-roster-heading"><div><strong>{arm.grade.name} · {arm.name}</strong><small>{arm.academicYear.name} · {arm.campus.name}</small></div><span>{students.length} students</span></div>
-                  {students.length ? <ul>{students.map((student) => <li key={student.id}><span>{student.firstName} {student.lastName}</span><small>{student.studentNumber || "No student number"}</small></li>)}</ul> : <p>No students enrolled in this class group yet.</p>}
+                  {students.length ? <ul>{students.map((student) => (
+                    <li key={student.id}>
+                      <div className="school-roster-student">
+                        <span>{student.firstName} {student.lastName}</span>
+                        <small>{student.studentNumber || "No school student number"}</small>
+                        {student.loginId ? <small>Student ID: {student.loginId}</small> : null}
+                      </div>
+                      <button
+                        className="people-inline-button"
+                        disabled={
+                          busy === student.id ||
+                          people.school.status !== "ACTIVE" ||
+                          student.loginMembership?.status === "INVITE_SENDING"
+                        }
+                        onClick={() => void issueStudentCredentials(student.id)}
+                        type="button"
+                      >
+                        {busy === student.id
+                          ? "Issuing…"
+                          : people.school.status !== "ACTIVE"
+                            ? "Available when active"
+                            : student.loginMembership?.status === "ACTIVE"
+                            ? "Reset password"
+                            : student.loginMembership?.status === "INVITE_FAILED"
+                              ? "Retry login"
+                              : "Issue login"}
+                      </button>
+                    </li>
+                  ))}</ul> : <p>No students enrolled in this class group yet.</p>}
                 </section>
               );
             })}</div>

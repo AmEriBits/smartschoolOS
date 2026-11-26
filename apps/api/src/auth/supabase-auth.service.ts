@@ -41,6 +41,65 @@ export class SupabaseAuthService {
     return data.user;
   }
 
+  async createUserWithPassword(email: string, password: string): Promise<User> {
+    const client = createClient(
+      this.requiredConfig("SUPABASE_URL"),
+      this.requiredConfig("SUPABASE_SERVICE_ROLE_KEY"),
+      { auth: { autoRefreshToken: false, detectSessionInUrl: false, persistSession: false } },
+    );
+    const { data, error } = await client.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+    });
+
+    if (error || !data.user) {
+      throw new ServiceUnavailableException("Supabase could not create the student sign-in.");
+    }
+
+    return data.user;
+  }
+
+  async updateUserPassword(userId: string, password: string): Promise<void> {
+    const client = createClient(
+      this.requiredConfig("SUPABASE_URL"),
+      this.requiredConfig("SUPABASE_SERVICE_ROLE_KEY"),
+      { auth: { autoRefreshToken: false, detectSessionInUrl: false, persistSession: false } },
+    );
+    const { error } = await client.auth.admin.updateUserById(userId, { password });
+    if (error) {
+      throw new ServiceUnavailableException("Supabase could not update the student password.");
+    }
+  }
+
+  async deleteUser(userId: string): Promise<void> {
+    const client = createClient(
+      this.requiredConfig("SUPABASE_URL"),
+      this.requiredConfig("SUPABASE_SERVICE_ROLE_KEY"),
+      { auth: { autoRefreshToken: false, detectSessionInUrl: false, persistSession: false } },
+    );
+    const { error } = await client.auth.admin.deleteUser(userId);
+    if (error) {
+      throw new ServiceUnavailableException("Supabase could not remove an incomplete student account.");
+    }
+  }
+
+  async verifyPassword(
+    email: string,
+    password: string,
+    expectedUserId: string,
+  ): Promise<void> {
+    const client = createClient(
+      this.requiredConfig("SUPABASE_URL"),
+      this.requiredPublishableKey(),
+      { auth: { autoRefreshToken: false, detectSessionInUrl: false, persistSession: false } },
+    );
+    const { data, error } = await client.auth.signInWithPassword({ email, password });
+    if (error || !data.user || data.user.id !== expectedUserId) {
+      throw new UnauthorizedException("The current password is incorrect.");
+    }
+  }
+
   private requiredConfig(key: string): string {
     const value = this.config.get<string>(key)?.trim();
     if (!value) {

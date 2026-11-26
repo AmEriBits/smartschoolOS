@@ -98,7 +98,13 @@ export function WorkspaceSignIn({ school, schoolSlug, workspace }: Props) {
     setError("");
     setAccess(null);
     try {
-      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+      const loginEmail = workspace.id === "student"
+        ? `student.${email.trim().toLowerCase()}@students.smartschools.invalid`
+        : email.trim();
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: loginEmail,
+        password,
+      });
       if (signInError) throw signInError;
     } catch (signInError) {
       setError(signInError instanceof Error ? signInError.message : "Sign-in failed.");
@@ -155,9 +161,13 @@ export function WorkspaceSignIn({ school, schoolSlug, workspace }: Props) {
           <p>
             {access.school.name} · {access.school.location} · School code {access.school.schoolCode}.{" "}
             {access.newlyAccepted && !passwordSet
-              ? "Set a password to finish securing your administrator account."
+              ? "Set a password to finish securing your school account."
               : access.activationRequired
                 ? "Your administrator invitation is accepted. The school is still in onboarding and is not publicly active yet."
+                : workspace.id === "teacher"
+                  ? "Your teacher access is verified. Open your workspace to view your assigned classes."
+                  : workspace.id === "student"
+                    ? "Your student access is verified. Open your workspace to see your classes and shared work."
                 : "Your account is authorized for this role. The operational workspace will be introduced in a later build phase."}
           </p>
           {access.newlyAccepted && !passwordSet ? (
@@ -186,6 +196,24 @@ export function WorkspaceSignIn({ school, schoolSlug, workspace }: Props) {
               </Link>
               <Link className="admin-setup-shortcut" href={`/s/${encodeURIComponent(schoolSlug)}/workspace/school-admin/setup`}>
                 Continue school setup
+              </Link>
+            </div>
+          ) : null}
+          {workspace.id === "teacher" &&
+          (!access.newlyAccepted || passwordSet) &&
+          !access.activationRequired ? (
+            <div className="admin-access-actions">
+              <Link className="button button-dark" href={`/s/${encodeURIComponent(schoolSlug)}/workspace/teacher/dashboard`}>
+                Open teacher workspace <span aria-hidden="true">→</span>
+              </Link>
+            </div>
+          ) : null}
+          {workspace.id === "student" &&
+          (!access.newlyAccepted || passwordSet) &&
+          !access.activationRequired ? (
+            <div className="admin-access-actions">
+              <Link className="button button-dark" href={`/s/${encodeURIComponent(schoolSlug)}/workspace/student/dashboard`}>
+                Open student workspace <span aria-hidden="true">→</span>
               </Link>
             </div>
           ) : null}
@@ -222,12 +250,13 @@ export function WorkspaceSignIn({ school, schoolSlug, workspace }: Props) {
           </p>
           <form className="sign-in-form" onSubmit={handleSignIn}>
             <label>
-              Email address
+              {workspace.id === "student" ? "Student ID" : "Email address"}
               <input
-                autoComplete="email"
+                autoComplete={workspace.id === "student" ? "username" : "email"}
                 onChange={(event) => setEmail(event.target.value)}
+                placeholder={workspace.id === "student" ? "STU-…" : undefined}
                 required
-                type="email"
+                type={workspace.id === "student" ? "text" : "email"}
                 value={email}
               />
             </label>
@@ -242,6 +271,9 @@ export function WorkspaceSignIn({ school, schoolSlug, workspace }: Props) {
               />
             </label>
             {error ? <p className="sign-in-error" role="alert">{error}</p> : null}
+            {workspace.id === "student" ? (
+              <p className="sign-in-security-note">Use the Student ID and temporary password issued by your school.</p>
+            ) : null}
             <button className="button button-dark" disabled={busy} type="submit">
               {busy ? "Verifying…" : "Sign in securely"} <span aria-hidden="true">→</span>
             </button>

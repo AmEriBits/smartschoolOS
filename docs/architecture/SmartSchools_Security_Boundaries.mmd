@@ -1,0 +1,46 @@
+---
+title: SmartSchools Security and Authorization Boundaries
+config:
+  theme: neutral
+  flowchart:
+    curve: basis
+---
+flowchart LR
+  subgraph TENANT[Organisation tenant boundary]
+    org[Organisation]
+    schoolA[School and campus A]
+    schoolB[School and campus B]
+    org --> schoolA
+    org --> schoolB
+  end
+
+  user[Authenticated user] --> auth[Cognito authentication and MFA options]
+  auth --> session[Server validates identity and active session]
+  session --> policy[NestJS authorization policy]
+  policy --> rbac[Staff RBAC<br/>role plus tenant/campus/class scope]
+  policy --> relationship[Guardian relationship permissions<br/>per child and capability]
+  rbac --> api[Authorized API operation]
+  relationship --> api
+
+  api --> context[Transaction-scoped tenant and campus context]
+  context --> appCheck[Domain-level ownership and policy checks]
+  appCheck --> db[(PostgreSQL tenant-scoped records)]
+  db --> rls[Row-level security as defense in depth]
+  rls --> result[Authorized result only]
+
+  api --> object[Private S3 access broker]
+  object --> signed[Short-lived URL after record authorization]
+
+  api --> audit[Audit sensitive reads and changes]
+  api --> queue[Scoped background job and event]
+  queue --> worker[Worker re-validates tenant and event permissions]
+  worker --> audit
+
+  denied[Denied request<br/>No data returned; security event recorded]
+  appCheck -. authorization failure .-> denied
+  rls -. policy failure .-> denied
+
+  childSafety[Child protection<br/>Verified family links · age-aware AI<br/>pickup verification · human review]
+  childSafety -. applies to .-> relationship
+  childSafety -. applies to .-> api
+  childSafety -. applies to .-> audit

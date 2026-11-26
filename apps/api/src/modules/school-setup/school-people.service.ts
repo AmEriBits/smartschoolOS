@@ -1,15 +1,18 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
   ServiceUnavailableException,
 } from "@nestjs/common";
+import { randomBytes, randomUUID } from "node:crypto";
 import { ConfigService } from "@nestjs/config";
 import {
   Prisma,
   SchoolMembershipRole,
   SchoolMembershipStatus,
+  SchoolStatus,
 } from "@prisma/client";
 import type { AuthenticatedUser } from "../../auth/authenticated-user";
 import { SupabaseAuthService } from "../../auth/supabase-auth.service";
@@ -42,6 +45,9 @@ export class SchoolPeopleService {
           where: { schoolId: school.id },
           orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
           include: {
+            loginMembership: {
+              select: { status: true, needsPasswordChange: true },
+            },
             enrollments: {
               orderBy: { academicYear: { startsOn: "desc" } },
               include: {
@@ -116,7 +122,7 @@ export class SchoolPeopleService {
       ]);
 
     return {
-      school: { id: school.id, name: school.name, slug: school.slug },
+      school: { id: school.id, name: school.name, slug: school.slug, status: school.status },
       teachers,
       students,
       classArms,
@@ -267,6 +273,208 @@ export class SchoolPeopleService {
       }
       throw error;
     }
+  }
+
+  async issueStudentCredentials(
+    schoolSlug: string,
+    actor: AuthenticatedUser,
+    studentId: string,
+  ) {
+    const school = await authorizeSchoolAdmin(this.prisma, schoolSlug, actor);
+    if (school.status !== SchoolStatus.ACTIVE) {
+      throw new ForbiddenException(
+        "Student sign-in can be issued when the school is active.",
+      );
+    }
+
+    const student = await this.prisma.student.findFirst({
+      where: { id: studentId, schoolId: school.id },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        loginId: true,
+        loginMembership: {
+          select: {
+            id: true,
+            email: true,
+            authUserId: true,
+            status: true,
+          },
+        },
+      },
+    });
+    if (!student) {
+      throw new NotFoundException("Student record not found.");
+    }
+
+    const membershipLoginId = student.loginMembership?.email.match(
+      /^student\.(.+)@students\.smartschools\.invalid$/i,
+    )?.[1]?.toUpperCase();
+    const loginId =
+      student.loginId ??
+      membershipLoginId ??
+      `STU-${randomUUID().toUpperCase()}`;
+    const email = student.loginMembership?.email ?? this.studentAuthEmail(loginId);
+    let membership = student.loginMembership;
+
+    if (membership && email !== this.studentAuthEmail(loginId)) {
+      throw new ConflictException("The student sign-in identity needs administrator support.");
+    }
+
+    if (!student.loginId || !membership) {
+      try {
+        membership = await this.prisma.$transaction(async (transaction) => {
+          if (!student.loginId) {
+            await transaction.student.update({
+              where: { id: student.id },
+              data: { loginId },
+            });
+          }
+          const created = membership
+            ? membership
+            : await transaction.schoolMembership.create({
+                data: {
+                  schoolId: school.id,
+                  studentId: student.id,
+                  email,
+                  role: SchoolMembershipRole.STUDENT,
+                  status: SchoolMembershipStatus.INVITE_PENDING,
+                },
+                select: {
+                  id: true,
+                  email: true,
+                  authUserId: true,
+                  status: true,
+                },
+              });
+          await this.audit(
+            transaction,
+            actor,
+            school.id,
+            "school.student.credentials_requested",
+            "student",
+            student.id,
+            { loginId },
+          );
+          return created;
+        });
+      } catch (error) {
+        if (
+          error instanceof Prisma.PrismaClientKnownRequestError &&
+          error.code === "P2002"
+        ) {
+          throw new ConflictException(
+            "A student sign-in already exists or is being created. Refresh the student list.",
+          );
+        }
+        throw error;
+      }
+    }
+
+    if (!membership) {
+      throw new ConflictException("The student sign-in could not be prepared.");
+    }
+
+    const membershipId = membership.id;
+    const temporaryPassword = randomBytes(18).toString("base64url");
+    if (membership.authUserId) {
+      if (membership.status !== SchoolMembershipStatus.ACTIVE) {
+        throw new ForbiddenException("This student account is not active.");
+      }
+      await this.prisma.$transaction(async (transaction) => {
+        await transaction.schoolMembership.update({
+          where: { id: membershipId },
+          data: { needsPasswordChange: true },
+        });
+        await this.audit(
+          transaction,
+          actor,
+          school.id,
+          "school.student.password_reset_requested",
+          "student",
+          student.id,
+          { loginId },
+        );
+      });
+      await this.auth.updateUserPassword(membership.authUserId, temporaryPassword);
+      return {
+        student: { id: student.id, firstName: student.firstName, lastName: student.lastName },
+        loginId,
+        temporaryPassword,
+      };
+    }
+
+    const claim = await this.prisma.schoolMembership.updateMany({
+      where: {
+        id: membership.id,
+        status: {
+          in: [
+            SchoolMembershipStatus.INVITE_PENDING,
+            SchoolMembershipStatus.INVITE_FAILED,
+          ],
+        },
+      },
+      data: { status: SchoolMembershipStatus.INVITE_SENDING },
+    });
+    if (claim.count !== 1) {
+      throw new ConflictException("This student sign-in is already being created.");
+    }
+
+    try {
+      const authUser = await this.auth.createUserWithPassword(
+        membership.email,
+        temporaryPassword,
+      );
+      try {
+        await this.prisma.$transaction(async (transaction) => {
+          await transaction.schoolMembership.update({
+            where: { id: membershipId },
+            data: {
+              authUserId: authUser.id,
+              status: SchoolMembershipStatus.ACTIVE,
+              needsPasswordChange: true,
+            },
+          });
+          await this.audit(
+            transaction,
+            actor,
+            school.id,
+            "school.student.credentials_issued",
+            "student",
+            student.id,
+            { loginId },
+          );
+        });
+      } catch (persistError) {
+        await this.auth.deleteUser(authUser.id);
+        throw persistError;
+      }
+    } catch (provisionError) {
+      await this.prisma.$transaction([
+        this.prisma.schoolMembership.update({
+          where: { id: membership.id },
+          data: { status: SchoolMembershipStatus.INVITE_FAILED },
+        }),
+        this.prisma.auditEvent.create({
+          data: {
+            actorAuthId: actor.id,
+            actorEmail: actor.email,
+            action: "school.student.credentials_failed",
+            entityType: "student",
+            entityId: student.id,
+            details: { schoolId: school.id, loginId },
+          },
+        }),
+      ]);
+      throw provisionError;
+    }
+
+    return {
+      student: { id: student.id, firstName: student.firstName, lastName: student.lastName },
+      loginId,
+      temporaryPassword,
+    };
   }
 
   async assignTeacher(
@@ -500,5 +708,9 @@ export class SchoolPeopleService {
       throw new BadRequestException(`${field} is required.`);
     }
     return name;
+  }
+
+  private studentAuthEmail(loginId: string) {
+    return `student.${loginId.toLowerCase()}@students.smartschools.invalid`;
   }
 }

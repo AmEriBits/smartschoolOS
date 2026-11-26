@@ -8,6 +8,10 @@ import { SchoolSetupController } from "../school-setup/school-setup.controller";
 import { SchoolSetupService } from "../school-setup/school-setup.service";
 import { SchoolPeopleController } from "../school-setup/school-people.controller";
 import { SchoolPeopleService } from "../school-setup/school-people.service";
+import { TeacherWorkspaceController } from "../school-setup/teacher-workspace.controller";
+import { TeacherWorkspaceService } from "../school-setup/teacher-workspace.service";
+import { StudentWorkspaceController } from "../school-setup/student-workspace.controller";
+import { StudentWorkspaceService } from "../school-setup/student-workspace.service";
 
 @Module({
   imports: [AuthModule],
@@ -17,7 +21,15 @@ import { SchoolPeopleService } from "../school-setup/school-people.service";
     SchoolsController,
     SchoolSetupController,
     SchoolPeopleController,
+    TeacherWorkspaceController,
+    StudentWorkspaceController,
   ],
-  providers: [SchoolApplicationService, SchoolSetupService, SchoolPeopleService],
+  providers: [
+    SchoolApplicationService,
+    SchoolSetupService,
+    SchoolPeopleService,
+    TeacherWorkspaceService,
+    StudentWorkspaceService,
+  ],
 })
 export class SchoolsModule {}

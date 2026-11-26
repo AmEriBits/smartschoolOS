@@ -1,0 +1,109 @@
+---
+title: SmartSchools System Overview
+config:
+  theme: neutral
+  flowchart:
+    curve: basis
+---
+flowchart TB
+  subgraph PEOPLE[People and access]
+    student[Student]
+    family[Parent or guardian]
+    teacher[Teacher]
+    schoolAdmin[School and group administrators]
+    platformAdmin[Platform administrator]
+    staffOps[Operations staff, drivers, attendants]
+  end
+
+  subgraph APPS[Experience applications]
+    web[Next.js web workspaces<br/>School, teacher, platform administration]
+    mobile[Expo and React Native apps<br/>Student, family, teacher, operations]
+  end
+  student --> mobile
+  family --> mobile
+  teacher --> web
+  teacher --> mobile
+  schoolAdmin --> web
+  platformAdmin --> web
+  staffOps --> mobile
+
+  subgraph BACKEND[Versioned platform API and modular monolith]
+    api[NestJS API<br/>OpenAPI contracts]
+    identity[Identity, tenant and authorization]
+    academics[Academics and school operations]
+    curriculum[Curriculum and teaching resources]
+    assessment[Assessment and reporting]
+    learning[Learning profile and recommendations]
+    experiences[Teacher, classroom, STEM and engagement]
+    familyDomain[Family and communications]
+    ops[Attendance, timetable, transport and dismissal]
+    finance[Fees and payment orchestration]
+    intelligence[AI orchestration and analytics]
+    api --> identity
+    api --> academics
+    api --> curriculum
+    api --> assessment
+    api --> learning
+    api --> experiences
+    api --> familyDomain
+    api --> ops
+    api --> finance
+    api --> intelligence
+  end
+  web --> api
+  mobile --> api
+
+  subgraph DATA[Shared data and background work]
+    postgres[(PostgreSQL and pgvector<br/>Tenant-scoped records, curriculum, outbox)]
+    files[(Private S3<br/>Curricula, resources, evidence)]
+    queue[SQS queues and workers<br/>Outbox dispatch, parsing, AI, notifications]
+    audit[Audit, logs, metrics and traces]
+  end
+  identity --> postgres
+  academics --> postgres
+  curriculum --> postgres
+  assessment --> postgres
+  learning --> postgres
+  intelligence --> postgres
+  curriculum --> files
+  experiences --> files
+  api --> queue
+  queue --> audit
+  api --> audit
+
+  subgraph AI[Shared intelligence]
+    graph[Versioned curriculum graph]
+    mastery[Evidence-backed mastery model]
+    tutor[Provider-adapted tutor and agents]
+    recommend[Recommendations and interventions]
+    projects[Cross-subject project generation]
+    analytics[School and cohort analytics]
+  end
+  curriculum --> graph
+  assessment --> mastery
+  graph --> tutor
+  graph --> recommend
+  mastery --> recommend
+  mastery --> analytics
+  graph --> projects
+  learning --> mastery
+  intelligence --> tutor
+  intelligence --> recommend
+  intelligence --> projects
+  intelligence --> analytics
+
+  subgraph EXT[Replaceable external integrations]
+    paystack[Paystack test and later live adapter]
+    messaging[Email, SMS and push providers]
+    devices[GPS, QR/RFID and device gateway]
+    model[Approved AI model provider]
+  end
+  finance <--> paystack
+  familyDomain <--> messaging
+  ops <--> devices
+  intelligence <--> model
+
+  governance[Cross-cutting governance<br/>Tenant isolation · child safety · human approvals<br/>privacy · audit · retention · review]
+  governance -. governs .-> BACKEND
+  governance -. governs .-> DATA
+  governance -. governs .-> AI

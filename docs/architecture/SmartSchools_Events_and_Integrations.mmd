@@ -1,0 +1,53 @@
+---
+title: SmartSchools Events and External Integrations
+config:
+  theme: neutral
+  flowchart:
+    curve: basis
+---
+flowchart LR
+  subgraph DOMAIN[Domain transaction]
+    command[Authorized command]
+    mutation[Update domain records]
+    outbox[(Write outbox row in same transaction)]
+    command --> mutation --> outbox
+  end
+
+  dispatcher[Outbox dispatcher] --> queue[SQS queue by event family]
+  outbox --> dispatcher
+  queue --> worker[Idempotent consumer]
+  worker --> effects[Domain side effect or notification]
+  worker --> processed[(Processed event ID and result)]
+  queue --> dlq[Dead-letter queue and controlled replay]
+
+  subgraph EVENTS[Example business events]
+    enrolled[StudentEnrolled]
+    curriculum[CurriculumVersionApproved]
+    marked[AssessmentMarked]
+    attendance[AttendanceRecorded]
+    payment[PaymentVerified]
+    handover[StudentHandoverConfirmed]
+  end
+  outbox --> EVENTS
+
+  subgraph ADAPTERS[Replaceable integration adapters]
+    pay[Paystack test adapter]
+    message[Email, SMS and push]
+    gps[GPS and transport device simulator]
+    gate[QR/RFID and gate device simulator]
+    ai[AI provider adapter]
+  end
+  worker <--> pay
+  worker <--> message
+  worker <--> gps
+  worker <--> gate
+  worker <--> ai
+
+  webhook[Signed provider webhook] --> verify[Verify signature on raw bytes<br/>and record provider event ID]
+  verify --> queue
+  verify -. invalid signature .-> reject[Reject and audit]
+
+  envelope[Event envelope<br/>ID · type · schema version · time<br/>tenant/campus · actor · correlation · payload]
+  outbox -. publishes .-> envelope
+  privacy[No unnecessary child data in event metadata<br/>Consumers fetch only authorized fields]
+  privacy -. governs .-> envelope

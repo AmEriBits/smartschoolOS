@@ -1,0 +1,41 @@
+---
+title: SmartSchools End-to-End Learning Loop
+config:
+  theme: neutral
+  flowchart:
+    curve: basis
+---
+flowchart TD
+  setup[Configure organisation, campuses, academic year, classes and enrolments]
+  upload[Upload curriculum and approved school resources]
+  extract[Parse candidate topics, concepts, objectives and prerequisites]
+  review{Authorized educator approves curriculum version?}
+  revise[Review and correct extracted structure]
+  publish[Publish version with source provenance]
+  teach[Prepare lesson and topic-linked assessment]
+  submit[Student submits answers and evidence]
+  mark[Teacher reviews marks and approves official grade]
+  evidence[Persist topic-level assessment evidence]
+  model[Update mastery estimate and prerequisite gaps]
+  actions[Create next-best learning actions]
+  student[Student receives practice, guided tutor support and quests]
+  teacher[Teacher receives class heatmap and reviewable intervention flags]
+  parent[Authorized guardian sees progress and support guidance]
+  project[Recommend curriculum-linked STEM project]
+  portfolio[Student adds project evidence to portfolio]
+  reassess[New practice and project evidence]
+
+  setup --> upload --> extract --> review
+  review -->|No| revise --> extract
+  review -->|Yes| publish --> teach --> submit --> mark --> evidence --> model --> actions
+  actions --> student
+  actions --> teacher
+  actions --> parent
+  actions --> project --> portfolio --> reassess
+  student --> reassess
+  reassess --> evidence
+
+  guard[Human approval gates official curriculum and grades<br/>AI guidance is explainable, reviewable and revisable]
+  guard -. constrains .-> review
+  guard -. constrains .-> mark
+  guard -. constrains .-> actions
